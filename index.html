@@ -1217,18 +1217,20 @@
     <div class="linha"></div>
     <div>${responsavel}</div>
   </div>
-
-  <script>
-    window.print();
-  </script>
 </body>
 </html>
 `;
+
     const w = window.open("", "_blank");
     w.document.write(html);
     w.document.close();
     w.focus();
+    // chama a impressão depois que a janela abrir
+    setTimeout(() => {
+      try { w.print(); } catch (e) {}
+    }, 300);
   }
+
 
   // ================== AUTO LOGIN SE HOUVER DADOS =======
   window.addEventListener("load", () => {
@@ -1246,3 +1248,4 @@
 
 </body>
 </html>
+
