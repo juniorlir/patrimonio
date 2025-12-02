@@ -16,10 +16,10 @@
   <style>
     /* ================= VARIAVEIS E RESET ================= */
     :root {
-      --primary: #c8102e;        /* Vermelho Marca */
+      --primary: #c8102e;        
       --primary-dark: #a00c24;
       --primary-light: #fff0f2;
-      --accent: #f4b000;         /* Amarelo Marca */
+      --accent: #f4b000;         
       --text-main: #1f2937;
       --text-muted: #6b7280;
       --bg-body: #f3f4f6;
@@ -85,6 +85,9 @@
     
     .btn-secondary { background: white; border: 1px solid var(--border); color: var(--text-main); }
     .btn-secondary:hover { background: #f9fafb; border-color: #d1d5db; }
+
+    .btn-success { background: #10b981; color: white; }
+    .btn-success:hover { background: #059669; }
 
     .btn-danger { background: var(--primary-light); color: var(--primary); }
     .btn-danger:hover { background: #fee2e2; }
@@ -227,25 +230,6 @@
     .badge-manutencao { background: #fef9c3; color: #854d0e; }
     .badge-baixado { background: #fee2e2; color: #991b1b; }
 
-    /* ================= LOGIN ================= */
-    .login-container {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #fff0f2 0%, #f3f4f6 100%);
-      padding: 20px;
-    }
-
-    .login-box {
-      background: white;
-      width: 100%;
-      max-width: 400px;
-      padding: 40px;
-      border-radius: 24px;
-      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
-    }
-
     /* ================= MODAL ================= */
     .modal-backdrop {
       position: fixed;
@@ -269,7 +253,7 @@
     .modal-content {
       background: white;
       width: 90%;
-      max-width: 650px;
+      max-width: 700px;
       max-height: 90vh;
       overflow-y: auto;
       border-radius: 16px;
@@ -408,7 +392,7 @@
           </div>
 
           <form id="form-bem">
-            <input type="hidden" id="bem-id"> <!-- ID oculto -->
+            <input type="hidden" id="bem-id">
 
             <div class="grid-form">
               <div class="form-group full-width">
@@ -442,6 +426,16 @@
               </div>
 
               <div class="form-group">
+                <label>Valor de Aquisição (R$)</label>
+                <input type="number" id="bem-valor-aq" class="form-control" step="0.01" placeholder="0,00">
+              </div>
+
+              <div class="form-group">
+                <label>Valor Atual/Depreciado (R$)</label>
+                <input type="number" id="bem-valor-atual" class="form-control" step="0.01" placeholder="0,00">
+              </div>
+
+              <div class="form-group">
                 <label>Data Aquisição</label>
                 <input type="date" id="bem-data-aq" class="form-control">
               </div>
@@ -457,7 +451,6 @@
                   <option value="">Selecione...</option>
                   <option value="Linear">Linear</option>
                   <option value="Soma Dígitos">Soma dos Dígitos</option>
-                  <option value="Unidades Prod.">Unidades Produzidas</option>
                 </select>
               </div>
 
@@ -499,9 +492,7 @@
                 <th>Situação</th>
               </tr>
             </thead>
-            <tbody>
-              <!-- JS preenche aqui -->
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
       </main>
@@ -509,10 +500,17 @@
       <!-- VIEW: INVENTÁRIO -->
       <main id="view-inventario" class="view-section hidden">
         <div class="card">
-          <h3>Filtros de Pesquisa</h3>
-          <div class="grid-form" style="margin-top: 12px; margin-bottom: 0;">
-            <div class="form-group">
-              <input type="text" id="filtro-geral" class="form-control" placeholder="Buscar por nome, setor ou responsável...">
+          <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; align-items: flex-end;">
+            <div style="flex: 1; min-width: 250px;">
+              <h3>Filtros de Pesquisa</h3>
+              <div class="form-group" style="margin-top: 8px;">
+                <input type="text" id="filtro-geral" class="form-control" placeholder="Buscar por nome, setor ou responsável...">
+              </div>
+            </div>
+            <div>
+              <button id="btn-export-csv" class="btn btn-success">
+                <i class="ph ph-file-csv"></i> Exportar Excel/CSV
+              </button>
             </div>
           </div>
         </div>
@@ -525,6 +523,7 @@
                 <th>Descrição</th>
                 <th>Localização</th>
                 <th>Responsável</th>
+                <th>Valor Atual</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -602,11 +601,27 @@
       
       <div id="modal-body" style="margin-top: 20px; line-height: 1.6;"></div>
 
+      <!-- Container para Histórico dentro do Modal -->
+      <div id="modal-historico-container" style="margin-top: 24px; display: none;">
+        <h4>Histórico de Movimentações</h4>
+        <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+          <table id="tabela-hist-modal" style="font-size: 12px;">
+            <thead>
+              <tr><th>Data</th><th>Tipo</th><th>Destino</th><th>Resp.</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
       <div style="margin-top: 24px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+        <button id="btn-ver-historico" class="btn btn-secondary">
+          <i class="ph ph-clock-counter-clockwise"></i> Ver Histórico Completo
+        </button>
         <button id="btn-gerar-termo" class="btn btn-primary">
           <i class="ph ph-file-pdf"></i> Gerar Termo de Responsabilidade
         </button>
-        <button onclick="fecharModal()" class="btn btn-secondary">Fechar</button>
+        <button onclick="fecharModal()" class="btn btn-ghost">Fechar</button>
       </div>
     </div>
   </div>
@@ -617,7 +632,7 @@
   <script>
     // ================= CONFIGURAÇÃO =================
     const SUPABASE_URL = "https://vjqjebogkebxioeqnmbn.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_67cWgho9SpaO9IzZ0BDhyA_2qvQA53x"; // SUA KEY PÚBLICA
+    const SUPABASE_KEY = "sb_publishable_67cWgho9SpaO9IzZ0BDhyA_2qvQA53x";
 
     const headers = {
       "apikey": SUPABASE_KEY,
@@ -630,10 +645,7 @@
     async function apiCall(endpoint, method = 'GET', body = null) {
       const options = { method, headers };
       if (body) options.body = JSON.stringify(body);
-      
-      // Ajuste para Queries (GET com parametros)
       let url = `${SUPABASE_URL}/rest/v1/${endpoint}`;
-      
       const response = await fetch(url, options);
       if (!response.ok) {
         const errorText = await response.text();
@@ -647,7 +659,6 @@
     let bensList = [];
     let movList = [];
 
-    // ================= UI FUNCTIONS (TOASTS) =================
     function showToast(message, type = 'success') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
@@ -660,7 +671,6 @@
     function switchTab(targetId) {
       document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
       document.getElementById(targetId).classList.remove('hidden');
-      
       document.querySelectorAll('.nav-tab').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.target === targetId);
       });
@@ -690,18 +700,15 @@
 
       try {
         if (isRegisterMode) {
-          // Cadastrar
           const res = await apiCall('usuarios', 'POST', { nome, email, senha });
           currentUser = res[0];
           showToast('Conta criada com sucesso!');
         } else {
-          // Login
           const query = `usuarios?email=eq.${email}&senha=eq.${senha}`;
           const res = await apiCall(query);
           if (res.length === 0) throw new Error("Credenciais inválidas");
           currentUser = res[0];
         }
-
         localStorage.setItem('user_patrimonio', JSON.stringify(currentUser));
         initApp();
       } catch (err) {
@@ -714,54 +721,47 @@
       location.reload();
     });
 
-    // ================= INICIALIZAÇÃO =================
     function initApp() {
       if(!currentUser) return;
-      
       document.getElementById('user-name-display').textContent = currentUser.nome || currentUser.email;
       loginScreen.classList.add('hidden');
       appScreen.classList.remove('hidden');
-      
       carregarDados();
     }
 
     async function carregarDados() {
       try {
-        // Ordenação por ID decrescente para pegar os mais novos
         const [bens, movs] = await Promise.all([
           apiCall('bens?select=*&order=id.desc'),
-          apiCall('movimentacoes?select=*&order=data_mov.desc') // snake_case
+          apiCall('movimentacoes?select=*&order=data_mov.desc')
         ]);
-        
         bensList = bens;
         movList = movs;
-        
         renderTabelaBens();
         renderInventario();
         renderMovimentacoes();
         preencherSelectBens();
-        
       } catch (err) {
-        console.error(err);
-        showToast('Erro ao carregar dados', 'error');
+        if(!err.message.includes("404")) showToast('Erro ao carregar dados', 'error');
       }
     }
 
-    // ================= LÓGICA DE BENS (CORRIGIDO PARA SNAKE_CASE) =================
-    
-    // Helper para tratar inputs vazios como null
+    // ================= LÓGICA DE BENS =================
     const getVal = (id) => {
       const v = document.getElementById(id).value.trim();
       return v === "" ? null : v;
+    };
+    
+    const getNum = (id) => {
+      const v = getVal(id);
+      return v ? parseFloat(v) : null;
     };
 
     document.getElementById('btn-salvar-bem').addEventListener('click', async () => {
       const id = document.getElementById('bem-id').value;
       const descricao = getVal('bem-descricao');
-
       if (!descricao) return showToast('Descrição é obrigatória', 'error');
 
-      // === CORREÇÃO: Chaves em snake_case para o Supabase ===
       const data = {
         descricao: descricao,
         tag: getVal('bem-tag'),
@@ -770,8 +770,10 @@
         responsavel: getVal('bem-responsavel'),
         localizacao: getVal('bem-localizacao'),
         data_aquisicao: getVal('bem-data-aq'),        
-        vida_util_meses: getVal('bem-vida-util'),     
-        metodo_depreciacao: getVal('bem-metodo'),     
+        vida_util_meses: getNum('bem-vida-util'),     
+        metodo_depreciacao: getVal('bem-metodo'),
+        valor_aquisicao: getNum('bem-valor-aq'),   // Novo campo
+        valor_atual: getNum('bem-valor-atual'),    // Novo campo
         situacao: document.getElementById('bem-situacao').value,
         obs: getVal('bem-obs')
       };
@@ -797,7 +799,6 @@
     document.getElementById('btn-excluir-bem').addEventListener('click', async () => {
       const id = document.getElementById('bem-id').value;
       if (!confirm('Tem certeza? Essa ação não pode ser desfeita.')) return;
-      
       try {
         await apiCall(`bens?id=eq.${id}`, 'DELETE');
         showToast('Bem excluído.');
@@ -818,9 +819,7 @@
     function editarBem(id) {
       const bem = bensList.find(b => b.id == id);
       if (!bem) return;
-
       switchTab('view-bens');
-      // Preencher formulário usando nomes de colunas do banco (snake_case)
       document.getElementById('bem-id').value = bem.id;
       document.getElementById('bem-descricao').value = bem.descricao || "";
       document.getElementById('bem-tag').value = bem.tag || "";
@@ -831,16 +830,18 @@
       document.getElementById('bem-data-aq').value = bem.data_aquisicao || "";
       document.getElementById('bem-vida-util').value = bem.vida_util_meses || "";
       document.getElementById('bem-metodo').value = bem.metodo_depreciacao || "";
+      document.getElementById('bem-valor-aq').value = bem.valor_aquisicao || "";
+      document.getElementById('bem-valor-atual').value = bem.valor_atual || "";
       document.getElementById('bem-situacao').value = bem.situacao || "Ativo";
       document.getElementById('bem-obs').value = bem.obs || "";
-
       document.getElementById('btn-excluir-bem').classList.remove('hidden');
       document.getElementById('btn-salvar-bem').innerHTML = `<i class="ph ph-check"></i> Atualizar Bem`;
       window.scrollTo(0,0);
     }
 
     // ================= RENDERIZAÇÃO =================
-    
+    const formatMoney = (val) => val ? parseFloat(val).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '-';
+
     function getStatusBadge(status) {
       let cls = 'badge-ativo';
       if (status === 'Baixado') cls = 'badge-baixado';
@@ -877,6 +878,7 @@
           <td>${b.descricao}</td>
           <td>${b.localizacao || '-'}</td>
           <td>${b.responsavel || '-'}</td>
+          <td>${formatMoney(b.valor_atual)}</td>
           <td>${getStatusBadge(b.situacao)}</td>
         </tr>
       `).join('');
@@ -884,7 +886,7 @@
 
     document.getElementById('filtro-geral').addEventListener('input', renderInventario);
 
-    // ================= MOVIMENTAÇÕES (CORRIGIDO) =================
+    // ================= MOVIMENTAÇÕES =================
     function preencherSelectBens() {
       const sel = document.getElementById('mov-bem-select');
       sel.innerHTML = '<option value="">Selecione...</option>' + 
@@ -895,7 +897,6 @@
       const idBem = document.getElementById('mov-bem-select').value;
       if (!idBem) return showToast('Selecione um bem', 'error');
 
-      // Chaves em snake_case
       const dataMov = {
         id_bem: idBem,                              
         tipo_mov: getVal('mov-tipo'),               
@@ -908,15 +909,12 @@
 
       try {
         await apiCall('movimentacoes', 'POST', dataMov);
-        
-        // Atualiza o bem automaticamente também
         if(dataMov.setor_destino || dataMov.resp_destino) {
           const updateBem = {};
           if(dataMov.setor_destino) updateBem.setor = dataMov.setor_destino;
           if(dataMov.resp_destino) updateBem.responsavel = dataMov.resp_destino;
           await apiCall(`bens?id=eq.${idBem}`, 'PATCH', updateBem);
         }
-
         showToast('Movimentação registrada!');
         document.getElementById('mov-tipo').value = "";
         document.getElementById('mov-obs').value = "";
@@ -930,7 +928,6 @@
     function renderMovimentacoes() {
       const tbody = document.querySelector('#tabela-movimentacoes tbody');
       tbody.innerHTML = movList.slice(0, 15).map(m => {
-        // Leitura em snake_case
         const bem = bensList.find(b => b.id == m.id_bem);
         return `
         <tr>
@@ -943,7 +940,7 @@
       }).join('');
     }
 
-    // ================= MODAL & TERMO (CORRIGIDO) =================
+    // ================= MODAL, HISTÓRICO & TERMO =================
     let bemAtualModal = null;
     const modal = document.getElementById('modal-detalhes');
 
@@ -952,64 +949,177 @@
       if(!bem) return;
       bemAtualModal = bem;
       
-      // Leitura em snake_case
+      // Reseta visualização do histórico
+      document.getElementById('modal-historico-container').style.display = 'none';
+      document.getElementById('tabela-hist-modal').querySelector('tbody').innerHTML = '';
+
       document.getElementById('modal-body').innerHTML = `
         <div style="background:#f9fafb; padding:16px; border-radius:8px;">
           <p><strong>Descrição:</strong> ${bem.descricao}</p>
           <p><strong>Patrimônio/Tag:</strong> ${bem.tag || '-'}</p>
           <p><strong>Número de Série:</strong> ${bem.num_serie || '-'}</p>
-          <p><strong>Setor Atual:</strong> ${bem.setor || '-'}</p>
-          <p><strong>Responsável:</strong> ${bem.responsavel || '-'}</p>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px;">
+            <div><strong>Setor:</strong> ${bem.setor || '-'}</div>
+            <div><strong>Localização:</strong> ${bem.localizacao || '-'}</div>
+            <div><strong>Valor Aquisição:</strong> ${formatMoney(bem.valor_aquisicao)}</div>
+            <div><strong>Valor Atual:</strong> ${formatMoney(bem.valor_atual)}</div>
+          </div>
+          <p style="margin-top:8px;"><strong>Responsável:</strong> ${bem.responsavel || '-'}</p>
           <p><strong>Status:</strong> ${bem.situacao}</p>
         </div>
         <p style="margin-top:12px;"><strong>Observações:</strong> ${bem.obs || 'Nenhuma observação.'}</p>
       `;
-      
       modal.classList.add('open');
     }
+
+    // Botão "Ver Histórico Completo" dentro do Modal
+    document.getElementById('btn-ver-historico').addEventListener('click', () => {
+      if(!bemAtualModal) return;
+      const hist = movList.filter(m => m.id_bem == bemAtualModal.id);
+      
+      const tbody = document.querySelector('#tabela-hist-modal tbody');
+      if(hist.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">Nenhuma movimentação.</td></tr>';
+      } else {
+        tbody.innerHTML = hist.map(m => `
+          <tr>
+            <td>${new Date(m.data_mov).toLocaleDateString('pt-BR')}</td>
+            <td>${m.tipo_mov || '-'}</td>
+            <td>${m.setor_destino || '-'}</td>
+            <td>${m.resp_destino || '-'}</td>
+          </tr>
+        `).join('');
+      }
+      document.getElementById('modal-historico-container').style.display = 'block';
+    });
 
     function fecharModal() {
       modal.classList.remove('open');
       bemAtualModal = null;
     }
 
+    // EXPORTAR CSV
+    document.getElementById('btn-export-csv').addEventListener('click', () => {
+      const filtro = document.getElementById('filtro-geral').value.toLowerCase();
+      const dadosExport = bensList.filter(b => 
+        (b.descricao || '').toLowerCase().includes(filtro) ||
+        (b.setor || '').toLowerCase().includes(filtro) ||
+        (b.responsavel || '').toLowerCase().includes(filtro)
+      );
+
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "ID;Descricao;Tag;Serie;Setor;Responsavel;ValorAquisicao;ValorAtual;Situacao\n";
+      
+      dadosExport.forEach(b => {
+        const row = [
+          b.id,
+          b.descricao,
+          b.tag || '',
+          b.num_serie || '',
+          b.setor || '',
+          b.responsavel || '',
+          (b.valor_aquisicao || 0).toString().replace('.',','),
+          (b.valor_atual || 0).toString().replace('.',','),
+          b.situacao
+        ].map(i => `"${i}"`).join(';');
+        csvContent += row + "\n";
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "inventario_patrimonio.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    // TERMO JURÍDICO COMPLETO
     document.getElementById('btn-gerar-termo').addEventListener('click', () => {
       if(!bemAtualModal) return;
       const b = bemAtualModal;
-      // Leitura em snake_case
+      const dataHoje = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
+      
       const htmlTermo = `
-        <html><head><title>Termo de Responsabilidade</title></head>
-        <body style="font-family: Arial; padding: 40px;">
-          <h2 style="text-align:center">TERMO DE RESPONSABILIDADE</h2>
-          <p>Eu, <strong>${b.responsavel || '___________________'}</strong>, declaro receber o bem descrito abaixo:</p>
-          <table border="1" cellspacing="0" cellpadding="10" style="width:100%; margin: 20px 0;">
-            <tr><td><strong>Bem</strong></td><td>${b.descricao}</td></tr>
-            <tr><td><strong>Patrimônio</strong></td><td>${b.tag || '-'}</td></tr>
-            <tr><td><strong>Série</strong></td><td>${b.num_serie || '-'}</td></tr>
-          </table>
-          <br><br><br>
-          <div style="text-align:center; border-top:1px solid #000; width:50%; margin:0 auto;">Assinatura do Responsável</div>
-        </body></html>
+        <html>
+        <head>
+          <title>Termo de Responsabilidade</title>
+          <style>
+            body { font-family: 'Times New Roman', serif; padding: 40px; max-width: 800px; margin: 0 auto; line-height: 1.5; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+            h1 { font-size: 18px; text-transform: uppercase; margin: 0; }
+            h2 { font-size: 16px; text-align: center; margin: 20px 0; text-decoration: underline; }
+            .content { text-align: justify; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+            td, th { border: 1px solid #999; padding: 8px; text-align: left; }
+            th { background: #f0f0f0; width: 30%; }
+            .signatures { margin-top: 60px; display: flex; justify-content: space-between; }
+            .sig-block { text-align: center; width: 45%; }
+            .line { border-top: 1px solid #000; margin-bottom: 5px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>COMEBOM DISTRIBUIDORA</h1>
+            <p style="margin:5px 0; font-size:12px;">Departamento de Gestão Patrimonial</p>
+          </div>
+
+          <h2>TERMO DE RESPONSABILIDADE E GUARDA DE BEM PATRIMONIAL</h2>
+
+          <div class="content">
+            <p>Pelo presente instrumento, eu, <strong>${b.responsavel || '_________________________________'}</strong>, declaro ter recebido da <strong>COMEBOM DISTRIBUIDORA</strong>, a título de empréstimo para uso exclusivo no desempenho de minhas funções profissionais, o bem patrimonial abaixo discriminado.</p>
+
+            <table>
+              <tr><th>Descrição do Bem</th><td>${b.descricao}</td></tr>
+              <tr><th>Nº de Patrimônio (Tag)</th><td>${b.tag || '-'}</td></tr>
+              <tr><th>Número de Série</th><td>${b.num_serie || '-'}</td></tr>
+              <tr><th>Setor de Alocação</th><td>${b.setor || '-'}</td></tr>
+              <tr><th>Estado de Conservação</th><td>${b.situacao}</td></tr>
+              <tr><th>Valor Atual Estimado</th><td>${formatMoney(b.valor_atual)}</td></tr>
+            </table>
+
+            <p><strong>Cláusulas e Responsabilidades:</strong></p>
+            <ol>
+              <li>O COLABORADOR assume total responsabilidade pela guarda e conservação do equipamento acima citado.</li>
+              <li>O equipamento deve ser utilizado <strong>estritamente para fins profissionais</strong> relacionados às atividades da empresa.</li>
+              <li>Em caso de dano, extravio, furto ou roubo, o COLABORADOR compromete-se a comunicar imediatamente o departamento responsável.</li>
+              <li>Em caso de danos causados por negligência, imprudência ou mau uso comprovado, a empresa reserva-se o direito de tomar as medidas cabíveis conforme a legislação vigente.</li>
+              <li>Este bem deverá ser devolvido imediatamente à empresa quando solicitado ou em caso de rescisão contratual.</li>
+            </ol>
+            
+            <p style="margin-top: 40px; text-align: right;">Parnamirim, ${dataHoje}.</p>
+          </div>
+
+          <div class="signatures">
+            <div class="sig-block">
+              <div class="line"></div>
+              <strong>COMEBOM DISTRIBUIDORA</strong><br>
+              Gestão de Patrimônio
+            </div>
+            <div class="sig-block">
+              <div class="line"></div>
+              <strong>${b.responsavel || 'Assinatura do Responsável'}</strong><br>
+              Usuário Responsável
+            </div>
+          </div>
+
+        </body>
+        </html>
       `;
       const w = window.open();
       w.document.write(htmlTermo);
-      w.print();
+      setTimeout(() => w.print(), 500);
     });
 
-    // ================= SETUP INICIAL =================
     document.querySelectorAll('.nav-tab').forEach(btn => {
       btn.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.target));
     });
 
-    // Auto Login Check
     const storedUser = localStorage.getItem('user_patrimonio');
     if (storedUser) {
-      try {
-        currentUser = JSON.parse(storedUser);
-        initApp();
-      } catch(e) { localStorage.removeItem('user_patrimonio'); }
+      try { currentUser = JSON.parse(storedUser); initApp(); } 
+      catch(e) { localStorage.removeItem('user_patrimonio'); }
     }
-
   </script>
 </body>
 </html>
