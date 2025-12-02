@@ -2,1247 +2,1007 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Controle de Patrimônio - Comebom Distribuidora</title>
+  <title>Comebom - Controle de Patrimônio</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Fonte Inter (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Ícones (Phosphor Icons) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
   <style>
+    /* ================= VARIAVEIS E RESET ================= */
     :root {
-      --primary: #c8102e;
-      --primary-dark: #940b21;
-      --accent: #f4b000;
-      --bg: #f5f5f5;
-      --card-bg: #ffffff;
-      --text: #333333;
-      --muted: #777777;
-      --border: #dddddd;
-      --radius: 8px;
+      --primary: #c8102e;        /* Vermelho Marca */
+      --primary-dark: #a00c24;
+      --primary-light: #fff0f2;
+      --accent: #f4b000;         /* Amarelo Marca */
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --bg-body: #f3f4f6;
+      --bg-card: #ffffff;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --danger: #ef4444;
+      --radius: 12px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+      --font-family: 'Inter', sans-serif;
     }
 
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    html, body {
+    * { box-sizing: border-box; outline: none; }
+    
+    body {
       margin: 0;
       padding: 0;
-      background: var(--bg);
-      color: var(--text);
+      font-family: var(--font-family);
+      background: var(--bg-body);
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
     }
 
-    h1, h2, h3 {
-      margin: 0;
-      font-weight: 600;
-    }
+    h1, h2, h3, h4 { margin: 0; font-weight: 600; }
+    p { margin: 0; color: var(--text-muted); }
 
-    button {
-      cursor: pointer;
-    }
-
-    .app-container {
+    button { cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    
+    /* ================= UTILITARIOS ================= */
+    .container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 16px;
-    }
-
-    .logo-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .logo-header .brand {
-      font-size: 24px;
-      font-weight: 800;
-      color: var(--primary);
-    }
-
-    .logo-header .brand span {
-      color: var(--accent);
-    }
-
-    .logo-header .user-info {
-      font-size: 14px;
-      color: var(--muted);
+      padding: 20px;
     }
 
     .card {
-      background: var(--card-bg);
+      background: var(--bg-card);
       border-radius: var(--radius);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-      padding: 16px;
-      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
     }
 
-    .tabs {
-      display: flex;
+    .hidden { display: none !important; }
+
+    /* ================= BOTOES ================= */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       gap: 8px;
-      margin-bottom: 8px;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 4px;
-      overflow-x: auto;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 14px;
+      border: none;
     }
 
-    .tab-btn {
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: none;
-      background: transparent;
-      color: var(--muted);
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    
+    .btn-secondary { background: white; border: 1px solid var(--border); color: var(--text-main); }
+    .btn-secondary:hover { background: #f9fafb; border-color: #d1d5db; }
+
+    .btn-danger { background: var(--primary-light); color: var(--primary); }
+    .btn-danger:hover { background: #fee2e2; }
+
+    .btn-ghost { background: transparent; color: var(--text-muted); padding: 8px; }
+    .btn-ghost:hover { background: #f3f4f6; color: var(--text-main); }
+
+    /* ================= FORMS ================= */
+    .grid-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .full-width { grid-column: 1 / -1; }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    
+    .form-group label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .form-control {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
       font-size: 14px;
+      background: #f9fafb;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    .form-control:focus {
+      background: white;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
+    }
+
+    textarea.form-control { resize: vertical; min-height: 80px; }
+
+    /* ================= HEADER & NAV ================= */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      background: white;
+      padding: 16px 24px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .brand span { color: var(--accent); }
+
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-tab {
+      padding: 10px 16px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-weight: 500;
       white-space: nowrap;
     }
 
-    .tab-btn.active {
-      background: var(--primary);
-      color: #fff;
+    .nav-tab:hover { color: var(--primary); }
+    
+    .nav-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
     }
 
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
-    }
-
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      font-size: 13px;
-    }
-
-    .field label {
-      color: var(--muted);
-      font-weight: 500;
-    }
-
-    .field input,
-    .field select,
-    .field textarea {
+    /* ================= TABELAS ================= */
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: 8px;
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 6px 8px;
-      font-size: 14px;
-    }
-
-    .field textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      border: none;
-      border-radius: 999px;
-      padding: 8px 16px;
-      color: #fff;
-      font-weight: 600;
-      font-size: 14px;
-    }
-
-    .btn-secondary {
-      background: transparent;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      padding: 8px 16px;
-      font-size: 14px;
-      color: var(--text);
-    }
-
-    .btn-danger {
-      background: #d32f2f;
-      color: #fff;
-      border-radius: 999px;
-      border: none;
-      padding: 8px 16px;
-      font-size: 14px;
-    }
-
-    .actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 12px;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    th, td {
-      padding: 6px 8px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
+      font-size: 14px;
+      white-space: nowrap;
     }
 
     th {
-      background: #fafafa;
+      background: #f9fafb;
+      text-align: left;
+      padding: 12px 16px;
       font-weight: 600;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
     }
 
-    tr:hover {
-      background: #f9f9f9;
+    td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-main);
     }
 
-    .table-wrapper {
-      max-height: 360px;
-      overflow: auto;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-    }
+    tbody tr:hover { background: #fdf2f2; cursor: pointer; }
 
-    .filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-
-    .filters input,
-    .filters select {
-      font-size: 13px;
+    /* ================= TAGS DE STATUS ================= */
+    .badge {
+      display: inline-block;
       padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 500;
     }
+    
+    .badge-ativo { background: #dcfce7; color: #166534; }
+    .badge-manutencao { background: #fef9c3; color: #854d0e; }
+    .badge-baixado { background: #fee2e2; color: #991b1b; }
 
-    /* Tela de Login */
-    .login-wrapper {
+    /* ================= LOGIN ================= */
+    .login-container {
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 16px;
-      background: radial-gradient(circle at top, #ffe0e0, #f5f5f5);
+      background: linear-gradient(135deg, #fff0f2 0%, #f3f4f6 100%);
+      padding: 20px;
     }
 
-    .login-card {
+    .login-box {
+      background: white;
       width: 100%;
-      max-width: 420px;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-      padding: 24px 20px;
+      max-width: 400px;
+      padding: 40px;
+      border-radius: 24px;
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
     }
 
-    .login-title {
-      text-align: center;
-      margin-bottom: 16px;
-    }
-
-    .login-title h1 {
-      font-size: 22px;
-      margin-bottom: 4px;
-      color: var(--primary);
-    }
-
-    .login-title p {
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .login-tabs {
-      display: flex;
-      border-radius: 999px;
-      background: #f1f1f1;
-      padding: 3px;
-      margin-bottom: 16px;
-    }
-
-    .login-tab-btn {
-      flex: 1;
-      border-radius: 999px;
-      border: none;
-      padding: 6px 8px;
-      font-size: 14px;
-      background: transparent;
-      cursor: pointer;
-    }
-
-    .login-tab-btn.active {
-      background: #fff;
-      font-weight: 600;
-      color: var(--primary);
-    }
-
-    .login-footer {
-      text-align: center;
-      margin-top: 12px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    /* Modal de Detalhes */
+    /* ================= MODAL ================= */
     .modal-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.45);
-      display: none;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 50;
+      display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
     }
 
-    .modal-backdrop.active {
-      display: flex;
+    .modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
     }
 
-    .modal {
-      background: #fff;
-      border-radius: 12px;
-      max-width: 700px;
-      width: 100%;
+    .modal-content {
+      background: white;
+      width: 90%;
+      max-width: 650px;
       max-height: 90vh;
-      overflow: auto;
-      padding: 16px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+      overflow-y: auto;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      transform: translateY(20px);
+      transition: transform 0.3s;
     }
 
-    .modal-header {
+    .modal-backdrop.open .modal-content { transform: translateY(0); }
+
+    /* ================= TOAST (Notificações) ================= */
+    #toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 100;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      box-shadow: var(--shadow-md);
+      display: flex;
       align-items: center;
-      margin-bottom: 8px;
+      gap: 10px;
+      animation: slideIn 0.3s ease;
+    }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
     }
 
-    .modal-header h3 {
-      font-size: 18px;
-    }
-
-    .close-btn {
-      border: none;
-      background: transparent;
-      font-size: 20px;
-      cursor: pointer;
-    }
-
-    .tag {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: #eee;
-      font-size: 11px;
-      margin-right: 4px;
-      margin-bottom: 2px;
-    }
-
-    .status-ativo {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-
-    .status-baixado {
-      background: #ffebee;
-      color: #c62828;
-    }
-
-    .small {
-      font-size: 12px;
-      color: var(--muted);
-    }
-
+    /* ================= MOBILE ================= */
     @media (max-width: 768px) {
-      .logo-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-      }
+      .app-header { flex-direction: column; gap: 16px; align-items: flex-start; }
+      .user-menu { width: 100%; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 16px; }
+      .grid-form { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-<!-- TELA DE LOGIN -->
-<div id="login-screen" class="login-wrapper">
-  <div class="login-card">
-    <div class="login-title">
-      <div class="brand" style="font-size:26px;margin-bottom:4px;">
-        COMEBOM <span>Distribuidora</span>
+  <!-- TELA DE LOGIN -->
+  <div id="login-screen" class="login-container">
+    <div class="login-box">
+      <div style="text-align: center; margin-bottom: 24px;">
+        <div class="brand" style="justify-content: center; font-size: 26px;">
+          <i class="ph ph-package"></i> COMEBOM <span>Distribuidora</span>
+        </div>
+        <p style="margin-top: 8px;">Sistema de Gestão Patrimonial</p>
       </div>
-      <p>Controle de Patrimônio em nuvem usando banco Supabase.</p>
-    </div>
 
-    <div class="login-tabs">
-      <button id="tab-login" class="login-tab-btn active" type="button">Entrar</button>
-      <button id="tab-register" class="login-tab-btn" type="button">Cadastrar</button>
-    </div>
+      <div class="nav-tabs" style="justify-content: center; border: none; margin-bottom: 20px;">
+        <button id="tab-login-btn" class="nav-tab active">Entrar</button>
+        <button id="tab-register-btn" class="nav-tab">Cadastrar</button>
+      </div>
 
-    <form id="login-form">
-      <div class="field">
-        <label for="login-email">E-mail</label>
-        <input type="email" id="login-email" required>
-      </div>
-      <div class="field" style="margin-top:8px;">
-        <label for="login-senha">Senha</label>
-        <input type="password" id="login-senha" required>
-      </div>
-      <button type="submit" class="btn-primary" style="width:100%;margin-top:12px;">Entrar</button>
-    </form>
+      <form id="auth-form">
+        <div id="register-fields" class="hidden">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label>Nome Completo</label>
+            <input type="text" id="auth-nome" class="form-control" placeholder="Seu nome">
+          </div>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label>E-mail Corporativo</label>
+          <input type="email" id="auth-email" class="form-control" placeholder="nome@comebom.com.br" required>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label>Senha</label>
+          <input type="password" id="auth-senha" class="form-control" placeholder="••••••••" required>
+        </div>
 
-    <form id="register-form" style="display:none;">
-      <div class="field">
-        <label for="reg-nome">Nome</label>
-        <input type="text" id="reg-nome" required>
-      </div>
-      <div class="field" style="margin-top:8px;">
-        <label for="reg-email">E-mail</label>
-        <input type="email" id="reg-email" required>
-      </div>
-      <div class="field" style="margin-top:8px;">
-        <label for="reg-senha">Senha</label>
-        <input type="password" id="reg-senha" minlength="4" required>
-      </div>
-      <button type="submit" class="btn-primary" style="width:100%;margin-top:12px;">Criar conta e entrar</button>
-    </form>
-
-    <div class="login-footer">
-      Duplo clique em um bem no inventário abre os detalhes e o termo de responsabilidade.
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          <span id="btn-auth-text">Acessar Sistema</span>
+          <i class="ph ph-arrow-right"></i>
+        </button>
+      </form>
     </div>
   </div>
-</div>
 
-<!-- APLICAÇÃO PRINCIPAL -->
-<div id="app-screen" style="display:none;">
-  <div class="app-container">
-    <div class="logo-header">
-      <div class="brand">
-        COMEBOM <span>Distribuidora</span>
-      </div>
-      <div class="user-info">
-        <span id="user-name"></span> • <button id="btn-logout" class="btn-secondary" type="button">Sair</button>
-      </div>
-    </div>
+  <!-- APLICAÇÃO PRINCIPAL -->
+  <div id="app-screen" class="hidden">
+    <div class="container">
+      
+      <!-- Cabeçalho -->
+      <header class="app-header">
+        <div class="brand">
+          <i class="ph ph-package" style="color: var(--primary);"></i>
+          COMEBOM <span>PATRIMÔNIO</span>
+        </div>
+        <div class="user-menu">
+          <div style="display: flex; flex-direction: column; text-align: right;">
+            <strong id="user-name-display" style="font-size: 14px;">Usuário</strong>
+            <span style="font-size: 11px; color: var(--text-muted);">Conectado</span>
+          </div>
+          <button id="btn-logout" class="btn btn-secondary" title="Sair">
+            <i class="ph ph-sign-out"></i>
+          </button>
+        </div>
+      </header>
 
-    <div class="card">
-      <div class="tabs">
-        <button class="tab-btn active" data-tab="tab-bens">Bens patrimoniais</button>
-        <button class="tab-btn" data-tab="tab-inventario">Inventário físico</button>
-        <button class="tab-btn" data-tab="tab-mov">Movimentações</button>
-      </div>
+      <!-- Navegação Abas -->
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-target="view-bens">
+          <i class="ph ph-desktop"></i> Cadastro de Bens
+        </button>
+        <button class="nav-tab" data-target="view-inventario">
+          <i class="ph ph-list-magnifying-glass"></i> Inventário Físico
+        </button>
+        <button class="nav-tab" data-target="view-mov">
+          <i class="ph ph-arrows-left-right"></i> Movimentações
+        </button>
+      </nav>
 
-      <!-- ABA BENS -->
-      <div id="tab-bens" class="tab-content active">
-        <h3>Cadastro de bens patrimoniais</h3>
-        <p class="small">Preencha os dados do bem e clique em "Salvar bem". Para editar, clique em uma linha da tabela.</p>
-        <div class="grid" style="margin-top:8px;">
-          <div class="field">
-            <label for="bem-id">ID (gerado automaticamente)</label>
-            <input id="bem-id" type="text" readonly placeholder="Novo bem">
+      <!-- VIEW: CADASTRO DE BENS -->
+      <main id="view-bens" class="view-section">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3><i class="ph ph-pencil-simple"></i> Gerenciar Bem</h3>
+            <button id="btn-novo-bem" class="btn btn-secondary">
+              <i class="ph ph-plus"></i> Limpar / Novo
+            </button>
           </div>
-          <div class="field">
-            <label for="bem-descricao">Descrição</label>
-            <input id="bem-descricao" type="text" required>
-          <div class="field">
-            <label for="bem-numserie">Nº de série</label>
-            <input id="bem-numserie" type="text">
-          </div>
-          <div class="field">
-            <label for="bem-tag">Tag / Patrimônio</label>
-            <input id="bem-tag" type="text">
-          </div>
-          <div class="field">
-            <label for="bem-setor">Setor</label>
-            <input id="bem-setor" type="text">
-          </div>
-          <div class="field">
-            <label for="bem-localizacao">Localização física</label>
-            <input id="bem-localizacao" type="text">
-          </div>
-          <div class="field">
-            <label for="bem-responsavel">Responsável atual</label>
-            <input id="bem-responsavel" type="text">
-          </div>
-          <div class="field">
-            <label for="bem-data-aq">Data de aquisição</label>
-            <input id="bem-data-aq" type="date">
-          </div>
-          <div class="field">
-            <label for="bem-vida-util">Vida útil (meses)</label>
-            <input id="bem-vida-util" type="number" min="0">
-          </div>
-          <div class="field">
-  <label for="bem-metodo">Método de depreciação</label>
-  <select id="bem-metodo">
-    <option value="">Selecione...</option>
-    <option value="Linear">Linear</option>
-    <option value="Soma dos dígitos">Soma dos dígitos</option>
-    <option value="Unidades produzidas">Unidades produzidas</option>
-    <option value="Saldo decrescente">Saldo decrescente</option>
-    <option value="Não aplicável">Não aplicável</option>
-  </select>
-</div>
 
-          <div class="field">
-            <label for="bem-data-uso">Data início de uso</label>
-            <input id="bem-data-uso" type="date">
-          </div>
-          <div class="field">
-            <label for="bem-situacao">Situação</label>
-            <select id="bem-situacao">
-              <option value="Ativo">Ativo</option>
-              <option value="Em manutenção">Em manutenção</option>
-              <option value="Baixado">Baixado</option>
-            </select>
-          </div>
-          <div class="field">
-  <label for="bem-motivo-baixa">Motivo de baixa</label>
-  <select id="bem-motivo-baixa">
-    <option value="">Selecione...</option>
-    <option value="Obsolescência">Obsolescência</option>
-    <option value="Perda / Roubo">Perda / Roubo</option>
-    <option value="Sucateamento">Sucateamento</option>
-    <option value="Venda / Alienação">Venda / Alienação</option>
-    <option value="Doação">Doação</option>
-    <option value="Transferência para outra empresa">Transferência para outra empresa</option>
-    <option value="Avaria irreparável">Avaria irreparável</option>
-    <option value="Reclassificação contábil">Reclassificação contábil</option>
-    <option value="Outro motivo">Outro motivo</option>
-  </select>
-</div>
+          <form id="form-bem">
+            <input type="hidden" id="bem-id"> <!-- ID oculto -->
 
-          <div class="field" style="grid-column:1/-1;">
-            <label for="bem-obs">Observações</label>
-            <textarea id="bem-obs"></textarea>
-          </div>
+            <div class="grid-form">
+              <div class="form-group full-width">
+                <label>Descrição do Bem *</label>
+                <input type="text" id="bem-descricao" class="form-control" placeholder="Ex: Notebook Dell Latitude 3520" required>
+              </div>
+
+              <div class="form-group">
+                <label>Tag / Patrimônio</label>
+                <input type="text" id="bem-tag" class="form-control" placeholder="001234">
+              </div>
+
+              <div class="form-group">
+                <label>Nº de Série</label>
+                <input type="text" id="bem-numserie" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label>Setor</label>
+                <input type="text" id="bem-setor" class="form-control" placeholder="TI, RH, Logística...">
+              </div>
+
+              <div class="form-group">
+                <label>Responsável Atual</label>
+                <input type="text" id="bem-responsavel" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label>Localização Física</label>
+                <input type="text" id="bem-localizacao" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label>Data Aquisição</label>
+                <input type="date" id="bem-data-aq" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label>Vida Útil (meses)</label>
+                <input type="number" id="bem-vida-util" class="form-control">
+              </div>
+
+              <div class="form-group">
+                <label>Método Depreciação</label>
+                <select id="bem-metodo" class="form-control">
+                  <option value="">Selecione...</option>
+                  <option value="Linear">Linear</option>
+                  <option value="Soma Dígitos">Soma dos Dígitos</option>
+                  <option value="Unidades Prod.">Unidades Produzidas</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Situação</label>
+                <select id="bem-situacao" class="form-control">
+                  <option value="Ativo">Ativo</option>
+                  <option value="Em manutenção">Em manutenção</option>
+                  <option value="Baixado">Baixado</option>
+                </select>
+              </div>
+
+              <div class="form-group full-width">
+                <label>Observações</label>
+                <textarea id="bem-obs" class="form-control"></textarea>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button type="button" id="btn-salvar-bem" class="btn btn-primary">
+                <i class="ph ph-floppy-disk"></i> Salvar Bem
+              </button>
+              <button type="button" id="btn-excluir-bem" class="btn btn-danger hidden">
+                <i class="ph ph-trash"></i> Excluir
+              </button>
+            </div>
+          </form>
         </div>
 
-        <div class="actions">
-          <button id="btn-salvar-bem" class="btn-primary" type="button">Salvar bem</button>
-          <button id="btn-novo-bem" class="btn-secondary" type="button">Novo</button>
-          <button id="btn-deletar-bem" class="btn-danger" type="button">Excluir bem</button>
-        </div>
-
-        <h4 style="margin-top:16px;">Bens cadastrados</h4>
-        <div class="table-wrapper">
+        <h3>Últimos Cadastros</h3>
+        <div class="table-responsive" style="margin-top: 12px;">
           <table id="tabela-bens">
             <thead>
-            <tr>
-              <th>ID</th>
-              <th>Descrição</th>
-              <th>Setor</th>
-              <th>Responsável</th>
-              <th>Tag</th>
-              <th>Situação</th>
-            </tr>
+              <tr>
+                <th>ID</th>
+                <th>Descrição</th>
+                <th>Setor</th>
+                <th>Responsável</th>
+                <th>Situação</th>
+              </tr>
             </thead>
             <tbody>
+              <!-- JS preenche aqui -->
             </tbody>
           </table>
         </div>
-        <p class="small">Duplo clique em uma linha para abrir os detalhes e o termo de responsabilidade.</p>
-      </div>
+      </main>
 
-      <!-- ABA INVENTÁRIO -->
-      <div id="tab-inventario" class="tab-content">
-        <h3>Inventário físico</h3>
-        <div class="filters">
-          <input type="text" id="filtro-desc" placeholder="Filtrar por descrição">
-          <input type="text" id="filtro-setor" placeholder="Filtrar por setor">
-          <input type="text" id="filtro-resp" placeholder="Filtrar por responsável">
+      <!-- VIEW: INVENTÁRIO -->
+      <main id="view-inventario" class="view-section hidden">
+        <div class="card">
+          <h3>Filtros de Pesquisa</h3>
+          <div class="grid-form" style="margin-top: 12px; margin-bottom: 0;">
+            <div class="form-group">
+              <input type="text" id="filtro-geral" class="form-control" placeholder="Buscar por nome, setor ou responsável...">
+            </div>
+          </div>
         </div>
-        <div class="table-wrapper">
+
+        <div class="table-responsive">
           <table id="tabela-inventario">
             <thead>
-            <tr>
-              <th>ID</th>
-              <th>Descrição</th>
-              <th>Setor</th>
-              <th>Localização</th>
-              <th>Responsável</th>
-              <th>Situação</th>
-            </tr>
+              <tr>
+                <th>Tag</th>
+                <th>Descrição</th>
+                <th>Localização</th>
+                <th>Responsável</th>
+                <th>Status</th>
+              </tr>
             </thead>
-            <tbody>
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
-        <p class="small">Duplo clique em um bem para ver os detalhes e o histórico de movimentações.</p>
-      </div>
+      </main>
 
-      <!-- ABA MOVIMENTAÇÕES -->
-      <div id="tab-mov" class="tab-content">
-        <h3>Movimentações de bens</h3>
-        <div class="grid" style="margin-top:8px;">
-          <div class="field">
-            <label for="mov-bem">Bem</label>
-            <select id="mov-bem"></select>
+      <!-- VIEW: MOVIMENTAÇÕES -->
+      <main id="view-mov" class="view-section hidden">
+        <div class="card">
+          <h3>Registrar Movimentação</h3>
+          <div class="grid-form" style="margin-top: 16px;">
+            <div class="form-group full-width">
+              <label>Selecione o Bem</label>
+              <select id="mov-bem-select" class="form-control"></select>
+            </div>
+            
+            <div class="form-group">
+              <label>Tipo de Movimento</label>
+              <input type="text" id="mov-tipo" class="form-control" placeholder="Ex: Transferência, Empréstimo">
+            </div>
+
+            <div class="form-group">
+              <label>Data</label>
+              <input type="date" id="mov-data" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label>Setor Destino</label>
+              <input type="text" id="mov-setor-dest" class="form-control">
+            </div>
+
+            <div class="form-group">
+              <label>Resp. Destino</label>
+              <input type="text" id="mov-resp-dest" class="form-control">
+            </div>
+
+            <div class="form-group full-width">
+              <label>Descrição / Observação</label>
+              <input type="text" id="mov-obs" class="form-control">
+            </div>
           </div>
-          <div class="field">
-            <label for="mov-data">Data da movimentação</label>
-            <input type="date" id="mov-data">
-          </div>
-          <div class="field">
-            <label for="mov-tipo">Tipo</label>
-            <input type="text" id="mov-tipo" placeholder="Ex: Transferência de responsável">
-          </div>
-          <div class="field">
-            <label for="mov-setor-origem">Setor origem</label>
-            <input type="text" id="mov-setor-origem">
-          </div>
-          <div class="field">
-            <label for="mov-setor-destino">Setor destino</label>
-            <input type="text" id="mov-setor-destino">
-          </div>
-          <div class="field">
-            <label for="mov-resp-origem">Responsável origem</label>
-            <input type="text" id="mov-resp-origem">
-          </div>
-          <div class="field">
-            <label for="mov-resp-destino">Responsável destino</label>
-            <input type="text" id="mov-resp-destino">
-          </div>
-          <div class="field">
-            <label for="mov-valor">Valor movimentado (opcional)</label>
-            <input type="number" id="mov-valor" step="0.01">
-          </div>
-          <div class="field" style="grid-column:1/-1;">
-            <label for="mov-desc">Descrição / observação</label>
-            <textarea id="mov-desc"></textarea>
-          </div>
-        </div>
-        <div class="actions">
-          <button id="btn-registrar-mov" class="btn-primary" type="button">Registrar movimentação</button>
+          <button id="btn-registrar-mov" class="btn btn-primary">
+            <i class="ph ph-check-circle"></i> Confirmar Movimentação
+          </button>
         </div>
 
-        <h4 style="margin-top:16px;">Últimas movimentações</h4>
-        <div class="table-wrapper">
-          <table id="tabela-mov">
+        <h3>Histórico Recente</h3>
+        <div class="table-responsive">
+          <table id="tabela-movimentacoes">
             <thead>
-            <tr>
-              <th>Data</th>
-              <th>ID Mov</th>
-              <th>Bem</th>
-              <th>Tipo</th>
-              <th>Origem</th>
-              <th>Destino</th>
-              <th>Resp. origem</th>
-              <th>Resp. destino</th>
-            </tr>
+              <tr>
+                <th>Data</th>
+                <th>Bem</th>
+                <th>Tipo</th>
+                <th>Origem > Destino</th>
+              </tr>
             </thead>
-            <tbody>
-            </tbody>
+            <tbody></tbody>
           </table>
         </div>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- MODAL DE DETALHES -->
+  <div id="modal-detalhes" class="modal-backdrop">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <h2 id="modal-titulo" style="color: var(--primary);">Detalhes do Bem</h2>
+        <button onclick="fecharModal()" class="btn btn-ghost"><i class="ph ph-x" style="font-size: 20px;"></i></button>
+      </div>
+      
+      <div id="modal-body" style="margin-top: 20px; line-height: 1.6;"></div>
+
+      <div style="margin-top: 24px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+        <button id="btn-gerar-termo" class="btn btn-primary">
+          <i class="ph ph-file-pdf"></i> Gerar Termo de Responsabilidade
+        </button>
+        <button onclick="fecharModal()" class="btn btn-secondary">Fechar</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- MODAL DETALHES BEM -->
-<div id="modal-detalhes" class="modal-backdrop">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 id="det-titulo">Bem</h3>
-      <button class="close-btn" type="button" onclick="fecharModal()">×</button>
-    </div>
-    <div id="det-body"></div>
-    <h4 style="margin-top:12px;">Histórico de movimentações</h4>
-    <div class="table-wrapper" style="max-height:220px;">
-      <table id="tabela-hist">
-        <thead>
-        <tr>
-          <th>Data</th>
-          <th>Tipo</th>
-          <th>Setor origem</th>
-          <th>Setor destino</th>
-          <th>Resp. origem</th>
-          <th>Resp. destino</th>
-          <th>Descrição</th>
-        </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <div class="actions" style="margin-top:12px;">
-      <button id="btn-termo" class="btn-primary" type="button">Gerar termo de responsabilidade</button>
-      <button class="btn-secondary" type="button" onclick="fecharModal()">Fechar</button>
-    </div>
-  </div>
-</div>
+  <!-- CONTAINER DE TOASTS -->
+  <div id="toast-container"></div>
 
-<script>
-  // ================== CONFIG SUPABASE ======================
-  const SUPABASE_URL = "https://vjqjebogkebxioeqnmbn.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_67cWgho9SpaO9IzZ0BDhyA_2qvQA53x"; // <-- TROCAR PELA SUA PUBLISHABLE / ANON KEY
-    const supaHeaders = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": "Bearer " + SUPABASE_KEY,
-    "Content-Type": "application/json",
-    "Prefer": "return=representation"
-  };
+  <script>
+    // ================= CONFIGURAÇÃO =================
+    const SUPABASE_URL = "https://vjqjebogkebxioeqnmbn.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_67cWgho9SpaO9IzZ0BDhyA_2qvQA53x"; // SUA KEY PÚBLICA
 
-  async function supaSelect(table, extraQuery) {
-    const q = extraQuery ? extraQuery : "?select=*";
-    const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}${q}`, {
-      method: "GET",
-      headers: supaHeaders
-    });
-    if (!resp.ok) {
-      const err = await resp.text();
-      throw new Error("Erro Supabase SELECT: " + err);
-    }
-    return resp.json();
-  }
-
-    async function supaInsert(table, data) {
-    const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-      method: "POST",
-      headers: supaHeaders,
-      body: JSON.stringify(data)
-    });
-    if (!resp.ok) {
-      const err = await resp.text();
-      console.error("Erro Supabase INSERT:", err);
-      throw new Error(err);
-    }
-    return resp.json();
-  }
-
-  async function supaUpdate(table, idColumn, idValue, data) {
-    const query = `?select=*&${idColumn}=eq.${encodeURIComponent(idValue)}`;
-    const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
-      method: "PATCH",
-      headers: supaHeaders,
-      body: JSON.stringify(data)
-    });
-    if (!resp.ok) {
-      const err = await resp.text();
-      console.error("Erro Supabase UPDATE:", err);
-      throw new Error(err);
-    }
-    return resp.json();
-  }
-
-  async function supaDelete(table, idColumn, idValue) {
-    const query = `?${idColumn}=eq.${encodeURIComponent(idValue)}`;
-    const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
-      method: "DELETE",
-      headers: supaHeaders
-    });
-    if (!resp.ok) {
-      const err = await resp.text();
-      console.error("Erro Supabase DELETE:", err);
-      throw new Error(err);
-    }
-    return true;
-  }
-
-
-  // ================== ESTADO GLOBAL ====================
-  let usuarioAtual = null;
-  let bens = [];
-  let movimentacoes = [];
-  let bemSelecionadoId = null;
-  let bemModalAtual = null;
-
-  const loginScreen = document.getElementById("login-screen");
-  const appScreen = document.getElementById("app-screen");
-
-  // ================== LOGIN / CADASTRO =================
-
-  document.getElementById("tab-login").addEventListener("click", () => {
-    document.getElementById("tab-login").classList.add("active");
-    document.getElementById("tab-register").classList.remove("active");
-    document.getElementById("login-form").style.display = "block";
-    document.getElementById("register-form").style.display = "none";
-  });
-
-  document.getElementById("tab-register").addEventListener("click", () => {
-    document.getElementById("tab-register").classList.add("active");
-    document.getElementById("tab-login").classList.remove("active");
-    document.getElementById("login-form").style.display = "none";
-    document.getElementById("register-form").style.display = "block";
-  });
-
-  document.getElementById("login-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const email = document.getElementById("login-email").value.trim();
-    const senha = document.getElementById("login-senha").value.trim();
-    try {
-      const query = `?select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}`;
-      const users = await supaSelect("usuarios", query);
-      if (!users.length) {
-        alert("Usuário ou senha inválidos.");
-        return;
-      }
-      usuarioAtual = users[0];
-      localStorage.setItem("usuarioPatrimonio", JSON.stringify(usuarioAtual));
-      iniciarApp();
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao conectar com a API de login.");
-    }
-  });
-
-  document.getElementById("register-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const nome = document.getElementById("reg-nome").value.trim();
-    const email = document.getElementById("reg-email").value.trim();
-    const senha = document.getElementById("reg-senha").value.trim();
-    if (!nome || !email || !senha) {
-      alert("Preencha nome, e-mail e senha.");
-      return;
-    }
-    try {
-      await supaInsert("usuarios", { nome, email, senha });
-      const query = `?select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}`;
-      const users = await supaSelect("usuarios", query);
-      usuarioAtual = users[0];
-      localStorage.setItem("usuarioPatrimonio", JSON.stringify(usuarioAtual));
-      iniciarApp();
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao cadastrar usuário. Verifique se o e-mail já não está em uso.");
-    }
-  });
-
-  document.getElementById("btn-logout").addEventListener("click", () => {
-    localStorage.removeItem("usuarioPatrimonio");
-    usuarioAtual = null;
-    bens = [];
-    movimentacoes = [];
-    loginScreen.style.display = "flex";
-    appScreen.style.display = "none";
-  });
-
-  function iniciarApp() {
-    document.getElementById("user-name").textContent = usuarioAtual.nome || usuarioAtual.email;
-    loginScreen.style.display = "none";
-    appScreen.style.display = "block";
-    carregarTudo();
-  }
-
-  async function carregarTudo() {
-    try {
-      bens = await supaSelect("bens");
-      movimentacoes = await supaSelect("movimentacoes");
-      renderBens();
-      renderInventario();
-      preencherSelectMov();
-      renderTabelaMov();
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao carregar dados do servidor Supabase.");
-    }
-  }
-
-  // ================== TABS =============================
-  document.querySelectorAll(".tab-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      const tabId = btn.getAttribute("data-tab");
-      document.querySelectorAll(".tab-content").forEach(el => {
-        el.classList.toggle("active", el.id === tabId);
-      });
-    });
-  });
-
-  // ================== BENS =============================
-
-  function limparFormularioBem() {
-    bemSelecionadoId = null;
-    document.getElementById("bem-id").value = "";
-    document.getElementById("bem-descricao").value = "";
-    document.getElementById("bem-categoria").value = "";
-    document.getElementById("bem-numserie").value = "";
-    document.getElementById("bem-tag").value = "";
-    document.getElementById("bem-setor").value = "";
-    document.getElementById("bem-localizacao").value = "";
-    document.getElementById("bem-responsavel").value = "";
-    document.getElementById("bem-data-aq").value = "";
-    document.getElementById("bem-vida-util").value = "";
-    document.getElementById("bem-metodo").value = "";
-    document.getElementById("bem-data-uso").value = "";
-    document.getElementById("bem-situacao").value = "Ativo";
-    document.getElementById("bem-motivo-baixa").value = "";
-    document.getElementById("bem-obs").value = "";
-  }
-
-  document.getElementById("btn-novo-bem").addEventListener("click", limparFormularioBem);
-
-    document.getElementById("btn-salvar-bem").addEventListener("click", async () => {
-    // ... (mesmo código que já está)
-    try {
-      const idAtual = bemSelecionadoId;
-      if (idAtual) {
-        await supaUpdate("bens", "id", idAtual, data);
-        alert("Bem atualizado com sucesso.");
-      } else {
-        const inserted = await supaInsert("bens", data);
-        const novo = inserted && inserted[0];
-        if (novo) {
-          bemSelecionadoId = novo.id;
-          document.getElementById("bem-id").value = novo.id;
-        }
-        alert("Bem cadastrado com sucesso.");
-      }
-      await carregarTudo();
-      limparFormularioBem();
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao salvar bem no Supabase:\n" + err.message);
-    }
-  });
-
-  document.getElementById("btn-deletar-bem").addEventListener("click", async () => {
-    if (!bemSelecionadoId) {
-      alert("Selecione um bem na tabela para excluir.");
-      return;
-    }
-    if (!confirm("Tem certeza que deseja excluir este bem?")) return;
-    try {
-      await supaDelete("bens", "id", bemSelecionadoId);
-      alert("Bem excluído.");
-      await carregarTudo();
-      limparFormularioBem();
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao excluir bem no Supabase.");
-    }
-  });
-
-  function renderBens() {
-    const tbody = document.querySelector("#tabela-bens tbody");
-    tbody.innerHTML = "";
-    bens.forEach(b => {
-      const tr = document.createElement("tr");
-      tr.dataset.id = b.id;
-      tr.innerHTML = `
-        <td>${b.id || ""}</td>
-        <td>${b.descricao || ""}</td>
-        <td>${b.setor || ""}</td>
-        <td>${b.responsavel || ""}</td>
-        <td>${b.tag || ""}</td>
-        <td>${b.situacao || ""}</td>
-      `;
-      tr.addEventListener("click", () => preencherFormularioBem(b));
-      tr.addEventListener("dblclick", () => abrirModalDetalhes(b.id));
-      tbody.appendChild(tr);
-    });
-  }
-
-  function preencherFormularioBem(b) {
-    bemSelecionadoId = b.id;
-    document.getElementById("bem-id").value = b.id || "";
-    document.getElementById("bem-descricao").value = b.descricao || "";
-    document.getElementById("bem-categoria").value = b.categoria || "";
-    document.getElementById("bem-numserie").value = b.numSerie || "";
-    document.getElementById("bem-tag").value = b.tag || "";
-    document.getElementById("bem-setor").value = b.setor || "";
-    document.getElementById("bem-localizacao").value = b.localizacao || "";
-    document.getElementById("bem-responsavel").value = b.responsavel || "";
-    document.getElementById("bem-data-aq").value = b.dataAquisicao || "";
-    document.getElementById("bem-vida-util").value = b.vidaUtilMeses || "";
-    document.getElementById("bem-metodo").value = b.metodoDepreciacao || "";
-    document.getElementById("bem-data-uso").value = b.dataInicioUso || "";
-    document.getElementById("bem-situacao").value = b.situacao || "Ativo";
-    document.getElementById("bem-motivo-baixa").value = b.motivoBaixa || "";
-    document.getElementById("bem-obs").value = b.obs || "";
-  }
-
-  // ================== INVENTÁRIO =======================
-
-  function renderInventario() {
-    const tbody = document.querySelector("#tabela-inventario tbody");
-    tbody.innerHTML = "";
-
-    const filtroDesc = document.getElementById("filtro-desc").value.toLowerCase();
-    const filtroSetor = document.getElementById("filtro-setor").value.toLowerCase();
-    const filtroResp = document.getElementById("filtro-resp").value.toLowerCase();
-
-    bens
-      .filter(b =>
-        (b.descricao || "").toLowerCase().includes(filtroDesc) &&
-        (b.setor || "").toLowerCase().includes(filtroSetor) &&
-        (b.responsavel || "").toLowerCase().includes(filtroResp)
-      )
-      .forEach(b => {
-        const tr = document.createElement("tr");
-        tr.dataset.id = b.id;
-        tr.innerHTML = `
-          <td>${b.id || ""}</td>
-          <td>${b.descricao || ""}</td>
-          <td>${b.setor || ""}</td>
-          <td>${b.localizacao || ""}</td>
-          <td>${b.responsavel || ""}</td>
-          <td>${b.situacao || ""}</td>
-        `;
-        tr.addEventListener("dblclick", () => abrirModalDetalhes(b.id));
-        tbody.appendChild(tr);
-      });
-  }
-
-  document.getElementById("filtro-desc").addEventListener("input", renderInventario);
-  document.getElementById("filtro-setor").addEventListener("input", renderInventario);
-  document.getElementById("filtro-resp").addEventListener("input", renderInventario);
-
-  // ================== MOVIMENTAÇÕES ====================
-
-  function preencherSelectMov() {
-    const sel = document.getElementById("mov-bem");
-    sel.innerHTML = "";
-    if (!bens.length) {
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "Nenhum bem cadastrado";
-      sel.appendChild(opt);
-      return;
-    }
-    bens.forEach(b => {
-      const opt = document.createElement("option");
-      opt.value = b.id;
-      opt.textContent = `${b.id} - ${b.descricao}`;
-      sel.appendChild(opt);
-    });
-  }
-
-  document.getElementById("btn-registrar-mov").addEventListener("click", async () => {
-    const idBem = document.getElementById("mov-bem").value;
-    if (!idBem) {
-      alert("Selecione um bem.");
-      return;
-    }
-    const hoje = new Date().toISOString().slice(0,10);
-    const dataMov = document.getElementById("mov-data").value || hoje;
-
-    const data = {
-      dataMov,
-      idBem: Number(idBem),
-      tipoMov: document.getElementById("mov-tipo").value.trim(),
-      setorOrigem: document.getElementById("mov-setor-origem").value.trim(),
-      setorDestino: document.getElementById("mov-setor-destino").value.trim(),
-      respOrigem: document.getElementById("mov-resp-origem").value.trim(),
-      respDestino: document.getElementById("mov-resp-destino").value.trim(),
-      valor: document.getElementById("mov-valor").value,
-      usuario: usuarioAtual ? usuarioAtual.email : "",
-      descricao: document.getElementById("mov-desc").value.trim()
+    const headers = {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json",
+      "Prefer": "return=representation"
     };
 
-    try {
-      await supaInsert("movimentacoes", data);
-      alert("Movimentação registrada.");
-      document.getElementById("mov-desc").value = "";
-      document.getElementById("mov-tipo").value = "";
-      document.getElementById("mov-setor-origem").value = "";
-      document.getElementById("mov-setor-destino").value = "";
-      document.getElementById("mov-resp-origem").value = "";
-      document.getElementById("mov-resp-destino").value = "";
-      document.getElementById("mov-valor").value = "";
-      await carregarTudo();
-    } catch (err) {
-      console.error(err);
-      alert("Erro ao registrar movimentação no Supabase.");
+    // ================= SUPABASE API HELPERS =================
+    async function apiCall(endpoint, method = 'GET', body = null) {
+      const options = { method, headers };
+      if (body) options.body = JSON.stringify(body);
+      
+      // Ajuste para Queries (GET com parametros)
+      let url = `${SUPABASE_URL}/rest/v1/${endpoint}`;
+      
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Erro na requisição");
+      }
+      return response.json();
     }
-  });
 
-  function renderTabelaMov() {
-    const tbody = document.querySelector("#tabela-mov tbody");
-    tbody.innerHTML = "";
-    movimentacoes.slice().reverse().forEach(m => {
-      const bem = bens.find(b => String(b.id) === String(m.idBem));
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${m.dataMov || ""}</td>
-        <td>${m.idMov || ""}</td>
-        <td>${bem ? bem.descricao : m.idBem}</td>
-        <td>${m.tipoMov || ""}</td>
-        <td>${m.setorOrigem || ""}</td>
-        <td>${m.setorDestino || ""}</td>
-        <td>${m.respOrigem || ""}</td>
-        <td>${m.respDestino || ""}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
+    // ================= ESTADO DA APLICAÇÃO =================
+    let currentUser = null;
+    let bensList = [];
+    let movList = [];
 
-  // ================== MODAL DETALHES + TERMO ===========
-  const modal = document.getElementById("modal-detalhes");
-  const detBody = document.getElementById("det-body");
-  const detTitulo = document.getElementById("det-titulo");
-  const tabelaHist = document.querySelector("#tabela-hist tbody");
+    // ================= UI FUNCTIONS (TOASTS) =================
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = type === 'success' ? `<i class="ph ph-check-circle"></i> ${message}` : `<i class="ph ph-warning-circle"></i> ${message}`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
 
-  function abrirModalDetalhes(idBem) {
-    const bem = bens.find(b => String(b.id) === String(idBem));
-    if (!bem) return;
-    bemModalAtual = bem;
-    detTitulo.textContent = `${bem.id || ""} - ${bem.descricao || ""}`;
-
-    const statusClass = bem.situacao === "Baixado" ? "status-baixado" : "status-ativo";
-
-    detBody.innerHTML = `
-      <div class="small" style="margin-bottom:8px;">
-        <span class="tag ${statusClass}">${bem.situacao || "Ativo"}</span>
-        ${bem.tag ? `<span class="tag">Tag: ${bem.tag}</span>` : ""}
-        ${bem.categoria ? `<span class="tag">Categoria: ${bem.categoria}</span>` : ""}
-      </div>
-      <div class="grid">
-        <div class="field">
-          <label>Setor</label>
-          <div>${bem.setor || "-"}</div>
-        </div>
-        <div class="field">
-          <label>Localização</label>
-          <div>${bem.localizacao || "-"}</div>
-        </div>
-        <div class="field">
-          <label>Responsável atual</label>
-          <div>${bem.responsavel || "-"}</div>
-        </div>
-        <div class="field">
-          <label>Nº de série</label>
-          <div>${bem.numSerie || "-"}</div>
-        </div>
-        <div class="field">
-          <label>Data de aquisição</label>
-          <div>${bem.dataAquisicao || "-"}</div>
-        </div>
-        <div class="field">
-          <label>Data início de uso</label>
-          <div>${bem.dataInicioUso || "-"}</div>
-        </div>
-        <div class="field">
-          <label>Vida útil (meses)</label>
-          <div>${bem.vidaUtilMeses || "-"}</div>
-        </div>
-        <div class="field">
-          <label>Método de depreciação</label>
-          <div>${bem.metodoDepreciacao || "-"}</div>
-        </div>
-        <div class="field" style="grid-column:1/-1;">
-          <label>Observações</label>
-          <div>${bem.obs || "-"}</div>
-        </div>
-      </div>
-    `;
-
-    const hist = movimentacoes.filter(m => String(m.idBem) === String(idBem));
-    tabelaHist.innerHTML = "";
-    if (!hist.length) {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="7">Nenhuma movimentação registrada para este bem.</td>`;
-      tabelaHist.appendChild(tr);
-    } else {
-      hist.forEach(m => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${m.dataMov || ""}</td>
-          <td>${m.tipoMov || ""}</td>
-          <td>${m.setorOrigem || ""}</td>
-          <td>${m.setorDestino || ""}</td>
-          <td>${m.respOrigem || ""}</td>
-          <td>${m.respDestino || ""}</td>
-          <td>${m.descricao || ""}</td>
-        `;
-        tabelaHist.appendChild(tr);
+    function switchTab(targetId) {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+      document.getElementById(targetId).classList.remove('hidden');
+      
+      document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.target === targetId);
       });
     }
 
-    modal.classList.add("active");
-  }
+    // ================= AUTENTICAÇÃO =================
+    const loginScreen = document.getElementById('login-screen');
+    const appScreen = document.getElementById('app-screen');
+    let isRegisterMode = false;
 
-  function fecharModal() {
-    modal.classList.remove("active");
-    bemModalAtual = null;
-  }
+    document.getElementById('tab-register-btn').addEventListener('click', () => toggleAuthMode(true));
+    document.getElementById('tab-login-btn').addEventListener('click', () => toggleAuthMode(false));
 
-  document.getElementById("btn-termo").addEventListener("click", () => {
-    if (!bemModalAtual) return;
-    gerarTermoResponsabilidade(bemModalAtual);
-  });
-
-  function gerarTermoResponsabilidade(bem) {
-    const dataHoje = new Date();
-    const dataStr = dataHoje.toLocaleDateString("pt-BR");
-    const responsavel = bem.responsavel || "___________________________";
-
-    const html = `
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<title>Termo de Responsabilidade - ${bem.descricao || ""}</title>
-<style>
-  body { font-family: Arial, sans-serif; margin: 40px; }
-  h1 { text-align: center; font-size: 20px; margin-bottom: 4px; }
-  h2 { text-align: center; font-size: 16px; margin-top:0; margin-bottom:24px; color:#555;}
-  .empresa { text-align:center; font-weight:bold; margin-bottom:24px; }
-  .secao { margin-bottom:16px; }
-  .label { font-weight:bold; }
-  table { width:100%; border-collapse:collapse; margin-top:8px; }
-  td { padding:6px; border:1px solid #ccc; font-size:13px; }
-  .assinatura { margin-top:40px; text-align:center; }
-  .linha { margin-top:40px; border-top:1px solid #000; width:260px; margin-left:auto; margin-right:auto; }
-  .small { font-size:12px; color:#555; }
-</style>
-</head>
-<body>
-  <div class="empresa">COMEBOM DISTRIBUIDORA</div>
-  <h1>TERMO DE RESPONSABILIDADE POR BEM PATRIMONIAL</h1>
-  <h2>${bem.descricao || ""}</h2>
-
-  <div class="secao">
-    Eu, <span class="label">${responsavel}</span>, declaro receber da <span class="label">COMEBOM DISTRIBUIDORA</span> o bem abaixo descrito, comprometendo-me a zelar por sua integridade, conservação e utilização adequada, devolvendo-o em perfeitas condições ou comunicando imediatamente qualquer ocorrência relevante.
-  </div>
-
-  <div class="secao">
-    <div class="label">Dados do bem:</div>
-    <table>
-      <tr><td class="label" style="width:180px;">ID / Patrimônio</td><td>${bem.id || "-"}</td></tr>
-      <tr><td class="label">Descrição</td><td>${bem.descricao || "-"}</td></tr>
-      <tr><td class="label">Categoria</td><td>${bem.categoria || "-"}</td></tr>
-      <tr><td class="label">Nº de série</td><td>${bem.numSerie || "-"}</td></tr>
-      <tr><td class="label">Tag / Etiqueta</td><td>${bem.tag || "-"}</td></tr>
-      <tr><td class="label">Setor / Local de uso</td><td>${bem.setor || "-"} - ${bem.localizacao || ""}</td></tr>
-    </table>
-  </div>
-
-  <div class="secao small">
-    Declaro estar ciente de que este bem continua sendo propriedade da empresa e que sua utilização é exclusiva para fins profissionais, sendo vedada a transferência a terceiros sem autorização.
-  </div>
-
-  <div class="assinatura">
-    <div>${bem.localizacao || "Cidade"}, ${dataStr}</div>
-    <div class="linha"></div>
-    <div>${responsavel}</div>
-  </div>
-</body>
-</html>
-`;
-    const w = window.open("", "_blank");
-    w.document.write(html);
-    w.document.close();
-    w.focus();
-    setTimeout(() => { try { w.print(); } catch (e) {} }, 300);
-  }
-
-  // ================== AUTO LOGIN =======================
-  window.addEventListener("load", () => {
-    try {
-      const stored = localStorage.getItem("usuarioPatrimonio");
-      if (stored) {
-        usuarioAtual = JSON.parse(stored);
-        iniciarApp();
-      }
-    } catch (e) {
-      console.warn("Não foi possível restaurar o usuário logado.");
+    function toggleAuthMode(register) {
+      isRegisterMode = register;
+      document.getElementById('register-fields').classList.toggle('hidden', !register);
+      document.getElementById('btn-auth-text').textContent = register ? 'Criar Conta' : 'Acessar Sistema';
+      document.getElementById('tab-register-btn').classList.toggle('active', register);
+      document.getElementById('tab-login-btn').classList.toggle('active', !register);
     }
-  });
-</script>
 
+    document.getElementById('auth-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value;
+      const senha = document.getElementById('auth-senha').value;
+      const nome = document.getElementById('auth-nome').value;
+
+      try {
+        if (isRegisterMode) {
+          // Cadastrar
+          const res = await apiCall('usuarios', 'POST', { nome, email, senha });
+          currentUser = res[0];
+          showToast('Conta criada com sucesso!');
+        } else {
+          // Login (Busca simples, idealmente use Supabase Auth real para produção)
+          const query = `usuarios?email=eq.${email}&senha=eq.${senha}`;
+          const res = await apiCall(query);
+          if (res.length === 0) throw new Error("Credenciais inválidas");
+          currentUser = res[0];
+        }
+
+        localStorage.setItem('user_patrimonio', JSON.stringify(currentUser));
+        initApp();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      localStorage.removeItem('user_patrimonio');
+      location.reload();
+    });
+
+    // ================= INICIALIZAÇÃO =================
+    function initApp() {
+      if(!currentUser) return;
+      
+      document.getElementById('user-name-display').textContent = currentUser.nome || currentUser.email;
+      loginScreen.classList.add('hidden');
+      appScreen.classList.remove('hidden');
+      
+      carregarDados();
+    }
+
+    async function carregarDados() {
+      try {
+        const [bens, movs] = await Promise.all([
+          apiCall('bens?select=*&order=id.desc'),
+          apiCall('movimentacoes?select=*&order=dataMov.desc')
+        ]);
+        
+        bensList = bens;
+        movList = movs;
+        
+        renderTabelaBens();
+        renderInventario();
+        renderMovimentacoes();
+        preencherSelectBens();
+        
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao carregar dados', 'error');
+      }
+    }
+
+    // ================= LÓGICA DE BENS (AQUI ESTAVA O ERRO) =================
+    
+    // Helper para tratar inputs vazios como null
+    const getVal = (id) => {
+      const v = document.getElementById(id).value.trim();
+      return v === "" ? null : v;
+    };
+
+    document.getElementById('btn-salvar-bem').addEventListener('click', async () => {
+      const id = document.getElementById('bem-id').value;
+      const descricao = getVal('bem-descricao');
+
+      if (!descricao) return showToast('Descrição é obrigatória', 'error');
+
+      // CONSTRUÇÃO CORRETA DO OBJETO DATA
+      const data = {
+        descricao: descricao,
+        tag: getVal('bem-tag'),
+        numSerie: getVal('bem-numserie'),
+        setor: getVal('bem-setor'),
+        responsavel: getVal('bem-responsavel'),
+        localizacao: getVal('bem-localizacao'),
+        dataAquisicao: getVal('bem-data-aq'),
+        vidaUtilMeses: getVal('bem-vida-util'), // Enviará null se vazio, evitando erro int
+        metodoDepreciacao: getVal('bem-metodo'),
+        situacao: document.getElementById('bem-situacao').value,
+        obs: getVal('bem-obs')
+      };
+
+      try {
+        if (id) {
+          await apiCall(`bens?id=eq.${id}`, 'PATCH', data);
+          showToast('Bem atualizado!');
+        } else {
+          await apiCall('bens', 'POST', data);
+          showToast('Bem cadastrado!');
+        }
+        limparFormBem();
+        carregarDados();
+      } catch (err) {
+        console.error(err);
+        showToast('Erro ao salvar: ' + err.message, 'error');
+      }
+    });
+
+    document.getElementById('btn-novo-bem').addEventListener('click', limparFormBem);
+
+    document.getElementById('btn-excluir-bem').addEventListener('click', async () => {
+      const id = document.getElementById('bem-id').value;
+      if (!confirm('Tem certeza? Essa ação não pode ser desfeita.')) return;
+      
+      try {
+        await apiCall(`bens?id=eq.${id}`, 'DELETE');
+        showToast('Bem excluído.');
+        limparFormBem();
+        carregarDados();
+      } catch (err) {
+        showToast('Erro ao excluir', 'error');
+      }
+    });
+
+    function limparFormBem() {
+      document.getElementById('form-bem').reset();
+      document.getElementById('bem-id').value = "";
+      document.getElementById('btn-excluir-bem').classList.add('hidden');
+      document.getElementById('btn-salvar-bem').innerHTML = `<i class="ph ph-floppy-disk"></i> Salvar Bem`;
+    }
+
+    function editarBem(id) {
+      const bem = bensList.find(b => b.id == id);
+      if (!bem) return;
+
+      switchTab('view-bens');
+      document.getElementById('bem-id').value = bem.id;
+      document.getElementById('bem-descricao').value = bem.descricao || "";
+      document.getElementById('bem-tag').value = bem.tag || "";
+      document.getElementById('bem-numserie').value = bem.numSerie || "";
+      document.getElementById('bem-setor').value = bem.setor || "";
+      document.getElementById('bem-responsavel').value = bem.responsavel || "";
+      document.getElementById('bem-localizacao').value = bem.localizacao || "";
+      document.getElementById('bem-data-aq').value = bem.dataAquisicao || "";
+      document.getElementById('bem-vida-util').value = bem.vidaUtilMeses || "";
+      document.getElementById('bem-metodo').value = bem.metodoDepreciacao || "";
+      document.getElementById('bem-situacao').value = bem.situacao || "Ativo";
+      document.getElementById('bem-obs').value = bem.obs || "";
+
+      document.getElementById('btn-excluir-bem').classList.remove('hidden');
+      document.getElementById('btn-salvar-bem').innerHTML = `<i class="ph ph-check"></i> Atualizar Bem`;
+      window.scrollTo(0,0);
+    }
+
+    // ================= RENDERIZAÇÃO =================
+    
+    function getStatusBadge(status) {
+      let cls = 'badge-ativo';
+      if (status === 'Baixado') cls = 'badge-baixado';
+      if (status === 'Em manutenção') cls = 'badge-manutencao';
+      return `<span class="badge ${cls}">${status}</span>`;
+    }
+
+    function renderTabelaBens() {
+      const tbody = document.querySelector('#tabela-bens tbody');
+      tbody.innerHTML = bensList.slice(0, 10).map(b => `
+        <tr onclick="editarBem(${b.id})">
+          <td>#${b.id}</td>
+          <td><strong>${b.descricao}</strong><br><span style="font-size:12px;color:#777">${b.tag || '-'}</span></td>
+          <td>${b.setor || '-'}</td>
+          <td>${b.responsavel || '-'}</td>
+          <td>${getStatusBadge(b.situacao)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderInventario() {
+      const tbody = document.querySelector('#tabela-inventario tbody');
+      const filtro = document.getElementById('filtro-geral').value.toLowerCase();
+      
+      const filtrados = bensList.filter(b => 
+        (b.descricao || '').toLowerCase().includes(filtro) ||
+        (b.setor || '').toLowerCase().includes(filtro) ||
+        (b.responsavel || '').toLowerCase().includes(filtro)
+      );
+
+      tbody.innerHTML = filtrados.map(b => `
+        <tr onclick="abrirModal(${b.id})">
+          <td>${b.tag || 'S/N'}</td>
+          <td>${b.descricao}</td>
+          <td>${b.localizacao || '-'}</td>
+          <td>${b.responsavel || '-'}</td>
+          <td>${getStatusBadge(b.situacao)}</td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('filtro-geral').addEventListener('input', renderInventario);
+
+    // ================= MOVIMENTAÇÕES =================
+    function preencherSelectBens() {
+      const sel = document.getElementById('mov-bem-select');
+      sel.innerHTML = '<option value="">Selecione...</option>' + 
+        bensList.map(b => `<option value="${b.id}">${b.tag ? '['+b.tag+'] ' : ''}${b.descricao}</option>`).join('');
+    }
+
+    document.getElementById('btn-registrar-mov').addEventListener('click', async () => {
+      const idBem = document.getElementById('mov-bem-select').value;
+      if (!idBem) return showToast('Selecione um bem', 'error');
+
+      const dataMov = {
+        idBem: idBem,
+        tipoMov: getVal('mov-tipo'),
+        dataMov: getVal('mov-data') || new Date().toISOString().split('T')[0],
+        setorDestino: getVal('mov-setor-dest'),
+        respDestino: getVal('mov-resp-dest'),
+        descricao: getVal('mov-obs'),
+        usuario: currentUser.email
+      };
+
+      try {
+        await apiCall('movimentacoes', 'POST', dataMov);
+        
+        // Atualiza o bem automaticamente também
+        if(dataMov.setorDestino || dataMov.respDestino) {
+          const updateBem = {};
+          if(dataMov.setorDestino) updateBem.setor = dataMov.setorDestino;
+          if(dataMov.respDestino) updateBem.responsavel = dataMov.respDestino;
+          await apiCall(`bens?id=eq.${idBem}`, 'PATCH', updateBem);
+        }
+
+        showToast('Movimentação registrada!');
+        document.getElementById('mov-tipo').value = "";
+        document.getElementById('mov-obs').value = "";
+        carregarDados();
+      } catch (err) {
+        showToast('Erro ao movimentar', 'error');
+      }
+    });
+
+    function renderMovimentacoes() {
+      const tbody = document.querySelector('#tabela-movimentacoes tbody');
+      tbody.innerHTML = movList.slice(0, 15).map(m => {
+        const bem = bensList.find(b => b.id == m.idBem);
+        return `
+        <tr>
+          <td>${new Date(m.dataMov).toLocaleDateString('pt-BR')}</td>
+          <td>${bem ? bem.descricao : 'Bem ID '+m.idBem}</td>
+          <td>${m.tipoMov || 'Geral'}</td>
+          <td>${m.setorOrigem || ''} <i class="ph ph-arrow-right"></i> ${m.setorDestino || ''}</td>
+        </tr>
+        `;
+      }).join('');
+    }
+
+    // ================= MODAL & TERMO =================
+    let bemAtualModal = null;
+    const modal = document.getElementById('modal-detalhes');
+
+    function abrirModal(id) {
+      const bem = bensList.find(b => b.id == id);
+      if(!bem) return;
+      bemAtualModal = bem;
+      
+      document.getElementById('modal-body').innerHTML = `
+        <div style="background:#f9fafb; padding:16px; border-radius:8px;">
+          <p><strong>Descrição:</strong> ${bem.descricao}</p>
+          <p><strong>Patrimônio/Tag:</strong> ${bem.tag || '-'}</p>
+          <p><strong>Número de Série:</strong> ${bem.numSerie || '-'}</p>
+          <p><strong>Setor Atual:</strong> ${bem.setor || '-'}</p>
+          <p><strong>Responsável:</strong> ${bem.responsavel || '-'}</p>
+          <p><strong>Status:</strong> ${bem.situacao}</p>
+        </div>
+        <p style="margin-top:12px;"><strong>Observações:</strong> ${bem.obs || 'Nenhuma observação.'}</p>
+      `;
+      
+      modal.classList.add('open');
+    }
+
+    function fecharModal() {
+      modal.classList.remove('open');
+      bemAtualModal = null;
+    }
+
+    document.getElementById('btn-gerar-termo').addEventListener('click', () => {
+      if(!bemAtualModal) return;
+      const b = bemAtualModal;
+      const htmlTermo = `
+        <html><head><title>Termo de Responsabilidade</title></head>
+        <body style="font-family: Arial; padding: 40px;">
+          <h2 style="text-align:center">TERMO DE RESPONSABILIDADE</h2>
+          <p>Eu, <strong>${b.responsavel || '___________________'}</strong>, declaro receber o bem descrito abaixo:</p>
+          <table border="1" cellspacing="0" cellpadding="10" style="width:100%; margin: 20px 0;">
+            <tr><td><strong>Bem</strong></td><td>${b.descricao}</td></tr>
+            <tr><td><strong>Patrimônio</strong></td><td>${b.tag || '-'}</td></tr>
+            <tr><td><strong>Série</strong></td><td>${b.numSerie || '-'}</td></tr>
+          </table>
+          <br><br><br>
+          <div style="text-align:center; border-top:1px solid #000; width:50%; margin:0 auto;">Assinatura do Responsável</div>
+        </body></html>
+      `;
+      const w = window.open();
+      w.document.write(htmlTermo);
+      w.print();
+    });
+
+    // ================= SETUP INICIAL =================
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+      btn.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.target));
+    });
+
+    // Auto Login Check
+    const storedUser = localStorage.getItem('user_patrimonio');
+    if (storedUser) {
+      try {
+        currentUser = JSON.parse(storedUser);
+        initApp();
+      } catch(e) { localStorage.removeItem('user_patrimonio'); }
+    }
+
+  </script>
 </body>
 </html>
-
-
-
-
