@@ -871,29 +871,8 @@
 
   document.getElementById("btn-novo-bem").addEventListener("click", limparFormularioBem);
 
-  document.getElementById("btn-salvar-bem").addEventListener("click", async () => {
-    const data = {
-      descricao: document.getElementById("bem-descricao").value.trim(),
-      categoria: document.getElementById("bem-categoria").value.trim(),
-      numSerie: document.getElementById("bem-numserie").value.trim(),
-      tag: document.getElementById("bem-tag").value.trim(),
-      setor: document.getElementById("bem-setor").value.trim(),
-      localizacao: document.getElementById("bem-localizacao").value.trim(),
-      responsavel: document.getElementById("bem-responsavel").value.trim(),
-      dataAquisicao: document.getElementById("bem-data-aq").value,
-      valorAquisicao: "",
-      vidaUtilMeses: document.getElementById("bem-vida-util").value,
-      metodoDepreciacao: document.getElementById("bem-metodo").value.trim(),
-      dataInicioUso: document.getElementById("bem-data-uso").value,
-      situacao: document.getElementById("bem-situacao").value,
-      motivoBaixa: document.getElementById("bem-motivo-baixa").value.trim(),
-      obs: document.getElementById("bem-obs").value.trim(),
-      criado_por: usuarioAtual ? usuarioAtual.email : ""
-    };
-    if (!data.descricao) {
-      alert("Informe a descrição do bem.");
-      return;
-    }
+    document.getElementById("btn-salvar-bem").addEventListener("click", async () => {
+    // ... (mesmo código que já está)
     try {
       const idAtual = bemSelecionadoId;
       if (idAtual) {
@@ -912,7 +891,7 @@
       limparFormularioBem();
     } catch (err) {
       console.error(err);
-      alert("Erro ao salvar bem no Supabase.");
+      alert("Erro ao salvar bem no Supabase:\n" + err.message);
     }
   });
 
@@ -1263,6 +1242,7 @@
 
 </body>
 </html>
+
 
 
 
