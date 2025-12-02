@@ -695,7 +695,7 @@
           currentUser = res[0];
           showToast('Conta criada com sucesso!');
         } else {
-          // Login (Busca simples, idealmente use Supabase Auth real para produção)
+          // Login
           const query = `usuarios?email=eq.${email}&senha=eq.${senha}`;
           const res = await apiCall(query);
           if (res.length === 0) throw new Error("Credenciais inválidas");
@@ -727,9 +727,10 @@
 
     async function carregarDados() {
       try {
+        // Ordenação por ID decrescente para pegar os mais novos
         const [bens, movs] = await Promise.all([
           apiCall('bens?select=*&order=id.desc'),
-          apiCall('movimentacoes?select=*&order=dataMov.desc')
+          apiCall('movimentacoes?select=*&order=data_mov.desc')
         ]);
         
         bensList = bens;
@@ -746,7 +747,7 @@
       }
     }
 
-    // ================= LÓGICA DE BENS (AQUI ESTAVA O ERRO) =================
+    // ================= LÓGICA DE BENS (CORRIGIDO PARA SNAKE_CASE) =================
     
     // Helper para tratar inputs vazios como null
     const getVal = (id) => {
@@ -760,17 +761,17 @@
 
       if (!descricao) return showToast('Descrição é obrigatória', 'error');
 
-      // CONSTRUÇÃO CORRETA DO OBJETO DATA
+      // === CORREÇÃO AQUI: Chaves em snake_case para o Supabase ===
       const data = {
         descricao: descricao,
         tag: getVal('bem-tag'),
-        numSerie: getVal('bem-numserie'),
+        num_serie: getVal('bem-numserie'),            
         setor: getVal('bem-setor'),
         responsavel: getVal('bem-responsavel'),
         localizacao: getVal('bem-localizacao'),
-        dataAquisicao: getVal('bem-data-aq'),
-        vidaUtilMeses: getVal('bem-vida-util'), // Enviará null se vazio, evitando erro int
-        metodoDepreciacao: getVal('bem-metodo'),
+        data_aquisicao: getVal('bem-data-aq'),        
+        vida_util_meses: getVal('bem-vida-util'),     
+        metodo_depreciacao: getVal('bem-metodo'),     
         situacao: document.getElementById('bem-situacao').value,
         obs: getVal('bem-obs')
       };
@@ -819,16 +820,17 @@
       if (!bem) return;
 
       switchTab('view-bens');
+      // Preencher formulário usando nomes de colunas do banco (snake_case)
       document.getElementById('bem-id').value = bem.id;
       document.getElementById('bem-descricao').value = bem.descricao || "";
       document.getElementById('bem-tag').value = bem.tag || "";
-      document.getElementById('bem-numserie').value = bem.numSerie || "";
+      document.getElementById('bem-numserie').value = bem.num_serie || ""; 
       document.getElementById('bem-setor').value = bem.setor || "";
       document.getElementById('bem-responsavel').value = bem.responsavel || "";
       document.getElementById('bem-localizacao').value = bem.localizacao || "";
-      document.getElementById('bem-data-aq').value = bem.dataAquisicao || "";
-      document.getElementById('bem-vida-util').value = bem.vidaUtilMeses || "";
-      document.getElementById('bem-metodo').value = bem.metodoDepreciacao || "";
+      document.getElementById('bem-data-aq').value = bem.data_aquisicao || "";
+      document.getElementById('bem-vida-util').value = bem.vida_util_meses || "";
+      document.getElementById('bem-metodo').value = bem.metodo_depreciacao || "";
       document.getElementById('bem-situacao').value = bem.situacao || "Ativo";
       document.getElementById('bem-obs').value = bem.obs || "";
 
@@ -882,7 +884,7 @@
 
     document.getElementById('filtro-geral').addEventListener('input', renderInventario);
 
-    // ================= MOVIMENTAÇÕES =================
+    // ================= MOVIMENTAÇÕES (CORRIGIDO) =================
     function preencherSelectBens() {
       const sel = document.getElementById('mov-bem-select');
       sel.innerHTML = '<option value="">Selecione...</option>' + 
@@ -893,12 +895,13 @@
       const idBem = document.getElementById('mov-bem-select').value;
       if (!idBem) return showToast('Selecione um bem', 'error');
 
+      // Chaves em snake_case
       const dataMov = {
-        idBem: idBem,
-        tipoMov: getVal('mov-tipo'),
-        dataMov: getVal('mov-data') || new Date().toISOString().split('T')[0],
-        setorDestino: getVal('mov-setor-dest'),
-        respDestino: getVal('mov-resp-dest'),
+        id_bem: idBem,                              
+        tipo_mov: getVal('mov-tipo'),               
+        data_mov: getVal('mov-data') || new Date().toISOString().split('T')[0],
+        setor_destino: getVal('mov-setor-dest'),    
+        resp_destino: getVal('mov-resp-dest'),      
         descricao: getVal('mov-obs'),
         usuario: currentUser.email
       };
@@ -907,10 +910,10 @@
         await apiCall('movimentacoes', 'POST', dataMov);
         
         // Atualiza o bem automaticamente também
-        if(dataMov.setorDestino || dataMov.respDestino) {
+        if(dataMov.setor_destino || dataMov.resp_destino) {
           const updateBem = {};
-          if(dataMov.setorDestino) updateBem.setor = dataMov.setorDestino;
-          if(dataMov.respDestino) updateBem.responsavel = dataMov.respDestino;
+          if(dataMov.setor_destino) updateBem.setor = dataMov.setor_destino;
+          if(dataMov.resp_destino) updateBem.responsavel = dataMov.resp_destino;
           await apiCall(`bens?id=eq.${idBem}`, 'PATCH', updateBem);
         }
 
@@ -919,26 +922,28 @@
         document.getElementById('mov-obs').value = "";
         carregarDados();
       } catch (err) {
-        showToast('Erro ao movimentar', 'error');
+        console.error(err);
+        showToast('Erro ao movimentar: ' + err.message, 'error');
       }
     });
 
     function renderMovimentacoes() {
       const tbody = document.querySelector('#tabela-movimentacoes tbody');
       tbody.innerHTML = movList.slice(0, 15).map(m => {
-        const bem = bensList.find(b => b.id == m.idBem);
+        // Leitura em snake_case
+        const bem = bensList.find(b => b.id == m.id_bem);
         return `
         <tr>
-          <td>${new Date(m.dataMov).toLocaleDateString('pt-BR')}</td>
-          <td>${bem ? bem.descricao : 'Bem ID '+m.idBem}</td>
-          <td>${m.tipoMov || 'Geral'}</td>
-          <td>${m.setorOrigem || ''} <i class="ph ph-arrow-right"></i> ${m.setorDestino || ''}</td>
+          <td>${new Date(m.data_mov).toLocaleDateString('pt-BR')}</td>
+          <td>${bem ? bem.descricao : 'Bem ID '+m.id_bem}</td>
+          <td>${m.tipo_mov || 'Geral'}</td>
+          <td>${m.setor_origem || '-'} <i class="ph ph-arrow-right"></i> ${m.setor_destino || ''}</td>
         </tr>
         `;
       }).join('');
     }
 
-    // ================= MODAL & TERMO =================
+    // ================= MODAL & TERMO (CORRIGIDO) =================
     let bemAtualModal = null;
     const modal = document.getElementById('modal-detalhes');
 
@@ -947,11 +952,12 @@
       if(!bem) return;
       bemAtualModal = bem;
       
+      // Leitura em snake_case
       document.getElementById('modal-body').innerHTML = `
         <div style="background:#f9fafb; padding:16px; border-radius:8px;">
           <p><strong>Descrição:</strong> ${bem.descricao}</p>
           <p><strong>Patrimônio/Tag:</strong> ${bem.tag || '-'}</p>
-          <p><strong>Número de Série:</strong> ${bem.numSerie || '-'}</p>
+          <p><strong>Número de Série:</strong> ${bem.num_serie || '-'}</p>
           <p><strong>Setor Atual:</strong> ${bem.setor || '-'}</p>
           <p><strong>Responsável:</strong> ${bem.responsavel || '-'}</p>
           <p><strong>Status:</strong> ${bem.situacao}</p>
@@ -970,6 +976,7 @@
     document.getElementById('btn-gerar-termo').addEventListener('click', () => {
       if(!bemAtualModal) return;
       const b = bemAtualModal;
+      // Leitura em snake_case
       const htmlTermo = `
         <html><head><title>Termo de Responsabilidade</title></head>
         <body style="font-family: Arial; padding: 40px;">
@@ -978,7 +985,7 @@
           <table border="1" cellspacing="0" cellpadding="10" style="width:100%; margin: 20px 0;">
             <tr><td><strong>Bem</strong></td><td>${b.descricao}</td></tr>
             <tr><td><strong>Patrimônio</strong></td><td>${b.tag || '-'}</td></tr>
-            <tr><td><strong>Série</strong></td><td>${b.numSerie || '-'}</td></tr>
+            <tr><td><strong>Série</strong></td><td>${b.num_serie || '-'}</td></tr>
           </table>
           <br><br><br>
           <div style="text-align:center; border-top:1px solid #000; width:50%; margin:0 auto;">Assinatura do Responsável</div>
