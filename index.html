@@ -694,7 +694,7 @@
     return resp.json();
   }
 
-  async function supaInsert(table, data) {
+    async function supaInsert(table, data) {
     const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
       method: "POST",
       headers: supaHeaders,
@@ -702,7 +702,8 @@
     });
     if (!resp.ok) {
       const err = await resp.text();
-      throw new Error("Erro Supabase INSERT: " + err);
+      console.error("Erro Supabase INSERT:", err);
+      throw new Error(err);
     }
     return resp.json();
   }
@@ -716,7 +717,8 @@
     });
     if (!resp.ok) {
       const err = await resp.text();
-      throw new Error("Erro Supabase UPDATE: " + err);
+      console.error("Erro Supabase UPDATE:", err);
+      throw new Error(err);
     }
     return resp.json();
   }
@@ -729,10 +731,12 @@
     });
     if (!resp.ok) {
       const err = await resp.text();
-      throw new Error("Erro Supabase DELETE: " + err);
+      console.error("Erro Supabase DELETE:", err);
+      throw new Error(err);
     }
     return true;
   }
+
 
   // ================== ESTADO GLOBAL ====================
   let usuarioAtual = null;
@@ -1259,5 +1263,6 @@
 
 </body>
 </html>
+
 
 
