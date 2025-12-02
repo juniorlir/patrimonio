@@ -730,7 +730,7 @@
         // Ordenação por ID decrescente para pegar os mais novos
         const [bens, movs] = await Promise.all([
           apiCall('bens?select=*&order=id.desc'),
-          apiCall('movimentacoes?select=*&order=data_mov.desc')
+          apiCall('movimentacoes?select=*&order=data_mov.desc') // snake_case
         ]);
         
         bensList = bens;
@@ -761,7 +761,7 @@
 
       if (!descricao) return showToast('Descrição é obrigatória', 'error');
 
-      // === CORREÇÃO AQUI: Chaves em snake_case para o Supabase ===
+      // === CORREÇÃO: Chaves em snake_case para o Supabase ===
       const data = {
         descricao: descricao,
         tag: getVal('bem-tag'),
