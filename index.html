@@ -442,11 +442,6 @@
           <div class="field">
             <label for="bem-descricao">Descrição</label>
             <input id="bem-descricao" type="text" required>
-          </div>
-          <div class="field">
-            <label for="bem-categoria">Categoria</label>
-            <input id="bem-categoria" type="text">
-          </div>
           <div class="field">
             <label for="bem-numserie">Nº de série</label>
             <input id="bem-numserie" type="text">
@@ -476,9 +471,17 @@
             <input id="bem-vida-util" type="number" min="0">
           </div>
           <div class="field">
-            <label for="bem-metodo">Método de depreciação</label>
-            <input id="bem-metodo" type="text" placeholder="linear, soma dos dígitos...">
-          </div>
+  <label for="bem-metodo">Método de depreciação</label>
+  <select id="bem-metodo">
+    <option value="">Selecione...</option>
+    <option value="Linear">Linear</option>
+    <option value="Soma dos dígitos">Soma dos dígitos</option>
+    <option value="Unidades produzidas">Unidades produzidas</option>
+    <option value="Saldo decrescente">Saldo decrescente</option>
+    <option value="Não aplicável">Não aplicável</option>
+  </select>
+</div>
+
           <div class="field">
             <label for="bem-data-uso">Data início de uso</label>
             <input id="bem-data-uso" type="date">
@@ -492,9 +495,21 @@
             </select>
           </div>
           <div class="field">
-            <label for="bem-motivo-baixa">Motivo de baixa</label>
-            <input id="bem-motivo-baixa" type="text">
-          </div>
+  <label for="bem-motivo-baixa">Motivo de baixa</label>
+  <select id="bem-motivo-baixa">
+    <option value="">Selecione...</option>
+    <option value="Obsolescência">Obsolescência</option>
+    <option value="Perda / Roubo">Perda / Roubo</option>
+    <option value="Sucateamento">Sucateamento</option>
+    <option value="Venda / Alienação">Venda / Alienação</option>
+    <option value="Doação">Doação</option>
+    <option value="Transferência para outra empresa">Transferência para outra empresa</option>
+    <option value="Avaria irreparável">Avaria irreparável</option>
+    <option value="Reclassificação contábil">Reclassificação contábil</option>
+    <option value="Outro motivo">Outro motivo</option>
+  </select>
+</div>
+
           <div class="field" style="grid-column:1/-1;">
             <label for="bem-obs">Observações</label>
             <textarea id="bem-obs"></textarea>
@@ -1245,3 +1260,4 @@
 
 </body>
 </html>
+
