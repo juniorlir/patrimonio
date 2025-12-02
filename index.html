@@ -369,7 +369,7 @@
       <div class="brand" style="font-size:26px;margin-bottom:4px;">
         COMEBOM <span>Distribuidora</span>
       </div>
-      <p>Controle de Patrimônio em nuvem integrado ao Google Sheets.</p>
+      <p>Controle de Patrimônio em nuvem usando banco Supabase.</p>
     </div>
 
     <div class="login-tabs">
@@ -505,7 +505,6 @@
           <button id="btn-salvar-bem" class="btn-primary" type="button">Salvar bem</button>
           <button id="btn-novo-bem" class="btn-secondary" type="button">Novo</button>
           <button id="btn-deletar-bem" class="btn-danger" type="button">Excluir bem</button>
-          <button id="btn-exportar-csv" class="btn-secondary" type="button">Exportar bens (CSV)</button>
         </div>
 
         <h4 style="margin-top:16px;">Bens cadastrados</h4>
@@ -522,7 +521,6 @@
             </tr>
             </thead>
             <tbody>
-            <!-- preenchido via JS -->
             </tbody>
           </table>
         </div>
@@ -550,7 +548,6 @@
             </tr>
             </thead>
             <tbody>
-            <!-- JS -->
             </tbody>
           </table>
         </div>
@@ -618,7 +615,6 @@
             </tr>
             </thead>
             <tbody>
-            <!-- JS -->
             </tbody>
           </table>
         </div>
@@ -660,21 +656,68 @@
 </div>
 
 <script>
-  // ================== CONFIG API ======================
-  const API_URL = "https://script.google.com/macros/s/AKfycbxM_40wt9hJ9_O-J9cJ7qqhVOObV54ulTV9JgGbsjuYi8zFaQqM-35mt2a6UwOv3eQ/exec";
+  // ================== CONFIG SUPABASE ======================
+  const SUPABASE_URL = "https://vjqjebogkebxioeqnmbn.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_67cWgho9SpaO9IzZ0BDhyA_2qvQA53x"; // <-- TROCAR PELA SUA PUBLISHABLE / ANON KEY
 
-  async function apiGet(action) {
-    const resp = await fetch(`${API_URL}?action=${encodeURIComponent(action)}`);
+  const supaHeaders = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": "Bearer " + SUPABASE_KEY,
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+  };
+
+  async function supaSelect(table, extraQuery) {
+    const q = extraQuery ? extraQuery : "?select=*";
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}${q}`, {
+      method: "GET",
+      headers: supaHeaders
+    });
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error("Erro Supabase SELECT: " + err);
+    }
     return resp.json();
   }
 
-  async function apiPost(action, data) {
-    const resp = await fetch(`${API_URL}?action=${encodeURIComponent(action)}`, {
+  async function supaInsert(table, data) {
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: supaHeaders,
       body: JSON.stringify(data)
     });
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error("Erro Supabase INSERT: " + err);
+    }
     return resp.json();
+  }
+
+  async function supaUpdate(table, idColumn, idValue, data) {
+    const query = `?select=*&${idColumn}=eq.${encodeURIComponent(idValue)}`;
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
+      method: "PATCH",
+      headers: supaHeaders,
+      body: JSON.stringify(data)
+    });
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error("Erro Supabase UPDATE: " + err);
+    }
+    return resp.json();
+  }
+
+  async function supaDelete(table, idColumn, idValue) {
+    const query = `?${idColumn}=eq.${encodeURIComponent(idValue)}`;
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
+      method: "DELETE",
+      headers: supaHeaders
+    });
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error("Erro Supabase DELETE: " + err);
+    }
+    return true;
   }
 
   // ================== ESTADO GLOBAL ====================
@@ -682,11 +725,12 @@
   let bens = [];
   let movimentacoes = [];
   let bemSelecionadoId = null;
-
-  // ================== LOGIN / CADASTRO =================
+  let bemModalAtual = null;
 
   const loginScreen = document.getElementById("login-screen");
   const appScreen = document.getElementById("app-screen");
+
+  // ================== LOGIN / CADASTRO =================
 
   document.getElementById("tab-login").addEventListener("click", () => {
     document.getElementById("tab-login").classList.add("active");
@@ -707,12 +751,13 @@
     const email = document.getElementById("login-email").value.trim();
     const senha = document.getElementById("login-senha").value.trim();
     try {
-      const resp = await apiPost("login", { email, senha });
-      if (resp.erro) {
-        alert(resp.erro);
+      const query = `?select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}`;
+      const users = await supaSelect("usuarios", query);
+      if (!users.length) {
+        alert("Usuário ou senha inválidos.");
         return;
       }
-      usuarioAtual = resp;
+      usuarioAtual = users[0];
       localStorage.setItem("usuarioPatrimonio", JSON.stringify(usuarioAtual));
       iniciarApp();
     } catch (err) {
@@ -726,24 +771,20 @@
     const nome = document.getElementById("reg-nome").value.trim();
     const email = document.getElementById("reg-email").value.trim();
     const senha = document.getElementById("reg-senha").value.trim();
+    if (!nome || !email || !senha) {
+      alert("Preencha nome, e-mail e senha.");
+      return;
+    }
     try {
-      const resp = await apiPost("register", { nome, email, senha });
-      if (resp.erro) {
-        alert(resp.erro);
-        return;
-      }
-      // faz login automático
-      const loginResp = await apiPost("login", { email, senha });
-      if (loginResp.erro) {
-        alert(loginResp.erro);
-        return;
-      }
-      usuarioAtual = loginResp;
+      await supaInsert("usuarios", { nome, email, senha });
+      const query = `?select=*&email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}`;
+      const users = await supaSelect("usuarios", query);
+      usuarioAtual = users[0];
       localStorage.setItem("usuarioPatrimonio", JSON.stringify(usuarioAtual));
       iniciarApp();
     } catch (err) {
       console.error(err);
-      alert("Erro ao cadastrar usuário na API.");
+      alert("Erro ao cadastrar usuário. Verifique se o e-mail já não está em uso.");
     }
   });
 
@@ -765,19 +806,15 @@
 
   async function carregarTudo() {
     try {
-      const [bensResp, movResp] = await Promise.all([
-        apiGet("getBens"),
-        apiGet("getMovs")
-      ]);
-      bens = Array.isArray(bensResp) ? bensResp : [];
-      movimentacoes = Array.isArray(movResp) ? movResp : [];
+      bens = await supaSelect("bens");
+      movimentacoes = await supaSelect("movimentacoes");
       renderBens();
       renderInventario();
       preencherSelectMov();
       renderTabelaMov();
     } catch (err) {
       console.error(err);
-      alert("Erro ao carregar dados do servidor. Verifique a API do Google Apps Script.");
+      alert("Erro ao carregar dados do servidor Supabase.");
     }
   }
 
@@ -818,7 +855,6 @@
 
   document.getElementById("btn-salvar-bem").addEventListener("click", async () => {
     const data = {
-      id: bemSelecionadoId || document.getElementById("bem-id").value || "",
       descricao: document.getElementById("bem-descricao").value.trim(),
       categoria: document.getElementById("bem-categoria").value.trim(),
       numSerie: document.getElementById("bem-numserie").value.trim(),
@@ -827,7 +863,7 @@
       localizacao: document.getElementById("bem-localizacao").value.trim(),
       responsavel: document.getElementById("bem-responsavel").value.trim(),
       dataAquisicao: document.getElementById("bem-data-aq").value,
-      valorAquisicao: "", // não usamos mais no termo
+      valorAquisicao: "",
       vidaUtilMeses: document.getElementById("bem-vida-util").value,
       metodoDepreciacao: document.getElementById("bem-metodo").value.trim(),
       dataInicioUso: document.getElementById("bem-data-uso").value,
@@ -841,17 +877,24 @@
       return;
     }
     try {
-      const resp = await apiPost("saveBem", data);
-      if (resp.erro) {
-        alert(resp.erro);
-        return;
+      const idAtual = bemSelecionadoId;
+      if (idAtual) {
+        await supaUpdate("bens", "id", idAtual, data);
+        alert("Bem atualizado com sucesso.");
+      } else {
+        const inserted = await supaInsert("bens", data);
+        const novo = inserted && inserted[0];
+        if (novo) {
+          bemSelecionadoId = novo.id;
+          document.getElementById("bem-id").value = novo.id;
+        }
+        alert("Bem cadastrado com sucesso.");
       }
-      alert("Bem salvo com sucesso.");
       await carregarTudo();
       limparFormularioBem();
     } catch (err) {
       console.error(err);
-      alert("Erro ao salvar bem na API.");
+      alert("Erro ao salvar bem no Supabase.");
     }
   });
 
@@ -862,17 +905,13 @@
     }
     if (!confirm("Tem certeza que deseja excluir este bem?")) return;
     try {
-      const resp = await apiPost("deleteBem", { id: bemSelecionadoId });
-      if (resp.erro) {
-        alert(resp.erro);
-        return;
-      }
+      await supaDelete("bens", "id", bemSelecionadoId);
       alert("Bem excluído.");
       await carregarTudo();
       limparFormularioBem();
     } catch (err) {
       console.error(err);
-      alert("Erro ao excluir bem na API.");
+      alert("Erro ao excluir bem no Supabase.");
     }
   });
 
@@ -914,37 +953,6 @@
     document.getElementById("bem-motivo-baixa").value = b.motivoBaixa || "";
     document.getElementById("bem-obs").value = b.obs || "";
   }
-
-  // Exportar CSV
-  document.getElementById("btn-exportar-csv").addEventListener("click", () => {
-    if (!bens.length) {
-      alert("Não há bens para exportar.");
-      return;
-    }
-    const headers = [
-      "id","descricao","categoria","numSerie","tag","setor","localizacao",
-      "responsavel","dataAquisicao","vidaUtilMeses","metodoDepreciacao",
-      "dataInicioUso","situacao","motivoBaixa","obs","criado_por"
-    ];
-    const csvRows = [];
-    csvRows.push(headers.join(";"));
-    bens.forEach(b => {
-      const row = headers.map(h => {
-        const val = (b[h] || "").toString().replace(/"/g, '""');
-        return `"${val}"`;
-      });
-      csvRows.push(row.join(";"));
-    });
-    const blob = new Blob([csvRows.join("\r\n")], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "bens_patrimoniais.csv";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  });
 
   // ================== INVENTÁRIO =======================
 
@@ -1012,9 +1020,8 @@
     const dataMov = document.getElementById("mov-data").value || hoje;
 
     const data = {
-      idMov: "",
       dataMov,
-      idBem,
+      idBem: Number(idBem),
       tipoMov: document.getElementById("mov-tipo").value.trim(),
       setorOrigem: document.getElementById("mov-setor-origem").value.trim(),
       setorDestino: document.getElementById("mov-setor-destino").value.trim(),
@@ -1026,11 +1033,7 @@
     };
 
     try {
-      const resp = await apiPost("addMov", data);
-      if (resp.erro) {
-        alert(resp.erro);
-        return;
-      }
+      await supaInsert("movimentacoes", data);
       alert("Movimentação registrada.");
       document.getElementById("mov-desc").value = "";
       document.getElementById("mov-tipo").value = "";
@@ -1042,7 +1045,7 @@
       await carregarTudo();
     } catch (err) {
       console.error(err);
-      alert("Erro ao registrar movimentação na API.");
+      alert("Erro ao registrar movimentação no Supabase.");
     }
   });
 
@@ -1071,7 +1074,6 @@
   const detBody = document.getElementById("det-body");
   const detTitulo = document.getElementById("det-titulo");
   const tabelaHist = document.querySelector("#tabela-hist tbody");
-  let bemModalAtual = null;
 
   function abrirModalDetalhes(idBem) {
     const bem = bens.find(b => String(b.id) === String(idBem));
@@ -1220,19 +1222,14 @@
 </body>
 </html>
 `;
-
     const w = window.open("", "_blank");
     w.document.write(html);
     w.document.close();
     w.focus();
-    // chama a impressão depois que a janela abrir
-    setTimeout(() => {
-      try { w.print(); } catch (e) {}
-    }, 300);
+    setTimeout(() => { try { w.print(); } catch (e) {} }, 300);
   }
 
-
-  // ================== AUTO LOGIN SE HOUVER DADOS =======
+  // ================== AUTO LOGIN =======================
   window.addEventListener("load", () => {
     try {
       const stored = localStorage.getItem("usuarioPatrimonio");
@@ -1241,11 +1238,10 @@
         iniciarApp();
       }
     } catch (e) {
-      console.warn("Não foi possível restaurar usuário logado.");
+      console.warn("Não foi possível restaurar o usuário logado.");
     }
   });
 </script>
 
 </body>
 </html>
-
