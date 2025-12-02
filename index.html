@@ -131,6 +131,32 @@
 
     textarea.form-control { resize: vertical; min-height: 80px; }
 
+    /* Estilo para input de arquivo e preview */
+    .file-upload-wrapper {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .file-upload-wrapper:hover { border-color: var(--primary); }
+    .file-preview {
+      max-height: 150px;
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 10px;
+      display: none;
+      object-fit: contain;
+    }
+    .file-upload-wrapper input[type="file"] {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
     /* ================= HEADER & NAV ================= */
     .app-header {
       display: flex;
@@ -417,11 +443,22 @@
 
           <form id="form-bem">
             <input type="hidden" id="bem-id">
+            <input type="hidden" id="bem-foto-url-hidden"> <!-- URL da foto salva -->
 
             <div class="grid-form">
               <div class="form-group full-width">
                 <label>Descrição do Bem *</label>
                 <input type="text" id="bem-descricao" class="form-control" placeholder="Ex: Notebook Dell Latitude 3520" required>
+              </div>
+
+              <!-- Novo: Upload de Foto -->
+              <div class="form-group">
+                <label>Foto do Bem</label>
+                <div class="file-upload-wrapper">
+                  <span id="file-label"><i class="ph ph-camera"></i> Clique para adicionar foto</span>
+                  <input type="file" id="bem-foto-input" accept="image/*">
+                  <img id="bem-foto-preview" class="file-preview" alt="Preview">
+                </div>
               </div>
 
               <div class="form-group">
@@ -510,6 +547,7 @@
             <thead>
               <tr>
                 <th>ID</th>
+                <th>Foto</th>
                 <th>Descrição</th>
                 <th>Setor</th>
                 <th>Responsável</th>
@@ -678,6 +716,70 @@
       return response.json();
     }
 
+    // ================= COMPRESSÃO DE IMAGEM =================
+    // Comprime imagem para max 800px de largura e 70% de qualidade
+    function compressImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 800;
+            const scaleSize = MAX_WIDTH / img.width;
+            
+            // Só redimensiona se for maior que 800px
+            if (scaleSize < 1) {
+              canvas.width = MAX_WIDTH;
+              canvas.height = img.height * scaleSize;
+            } else {
+              canvas.width = img.width;
+              canvas.height = img.height;
+            }
+
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            // Converte para Blob JPEG 70%
+            canvas.toBlob((blob) => {
+              resolve(blob);
+            }, 'image/jpeg', 0.7);
+          };
+        };
+        reader.onerror = (error) => reject(error);
+      });
+    }
+
+    // ================= UPLOAD PARA SUPABASE STORAGE =================
+    async function uploadImage(file) {
+      // 1. Nome único
+      const fileName = `foto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`;
+      
+      // 2. Comprimir
+      const compressedBlob = await compressImage(file);
+      
+      // 3. Upload direto para o bucket 'fotos'
+      const url = `${SUPABASE_URL}/storage/v1/object/fotos/${fileName}`;
+      const uploadHeaders = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + SUPABASE_KEY,
+        "Content-Type": "image/jpeg"
+      };
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: uploadHeaders,
+        body: compressedBlob
+      });
+
+      if (!response.ok) throw new Error("Erro ao enviar imagem");
+      
+      // 4. Retornar URL Pública
+      return `${SUPABASE_URL}/storage/v1/object/public/fotos/${fileName}`;
+    }
+
     // ================= ESTADO DA APLICAÇÃO =================
     let currentUser = null;
     let bensList = [];
@@ -782,28 +884,58 @@
       return v ? parseFloat(v) : null;
     };
 
+    // Preview de Imagem
+    document.getElementById('bem-foto-input').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        document.getElementById('file-label').textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const preview = document.getElementById('bem-foto-preview');
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+
     document.getElementById('btn-salvar-bem').addEventListener('click', async () => {
       const id = document.getElementById('bem-id').value;
       const descricao = getVal('bem-descricao');
       if (!descricao) return showToast('Descrição é obrigatória', 'error');
 
-      const data = {
-        descricao: descricao,
-        tag: getVal('bem-tag'),
-        num_serie: getVal('bem-numserie'),            
-        setor: getVal('bem-setor'),
-        responsavel: getVal('bem-responsavel'),
-        localizacao: getVal('bem-localizacao'),
-        data_aquisicao: getVal('bem-data-aq'),        
-        vida_util_meses: getNum('bem-vida-util'),     
-        metodo_depreciacao: getVal('bem-metodo'),
-        valor_aquisicao: getNum('bem-valor-aq'),   // Novo campo
-        valor_atual: getNum('bem-valor-atual'),    // Novo campo
-        situacao: document.getElementById('bem-situacao').value,
-        obs: getVal('bem-obs')
-      };
+      // Botão loading
+      const btn = document.getElementById('btn-salvar-bem');
+      const originalText = btn.innerHTML;
+      btn.innerHTML = `<i class="ph ph-spinner ph-spin"></i> Salvando...`;
+      btn.disabled = true;
 
       try {
+        // Upload de Foto se existir
+        let fotoUrl = document.getElementById('bem-foto-url-hidden').value || null;
+        const fileInput = document.getElementById('bem-foto-input');
+        
+        if (fileInput.files.length > 0) {
+          fotoUrl = await uploadImage(fileInput.files[0]);
+        }
+
+        const data = {
+          descricao: descricao,
+          tag: getVal('bem-tag'),
+          num_serie: getVal('bem-numserie'),            
+          setor: getVal('bem-setor'),
+          responsavel: getVal('bem-responsavel'),
+          localizacao: getVal('bem-localizacao'),
+          data_aquisicao: getVal('bem-data-aq'),        
+          vida_util_meses: getNum('bem-vida-util'),     
+          metodo_depreciacao: getVal('bem-metodo'),
+          valor_aquisicao: getNum('bem-valor-aq'),   
+          valor_atual: getNum('bem-valor-atual'),    
+          situacao: document.getElementById('bem-situacao').value,
+          obs: getVal('bem-obs'),
+          foto_url: fotoUrl // Campo novo
+        };
+
         if (id) {
           await apiCall(`bens?id=eq.${id}`, 'PATCH', data);
           showToast('Bem atualizado!');
@@ -813,9 +945,13 @@
         }
         limparFormBem();
         carregarDados();
+
       } catch (err) {
         console.error(err);
         showToast('Erro ao salvar: ' + err.message, 'error');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
       }
     });
 
@@ -837,6 +973,9 @@
     function limparFormBem() {
       document.getElementById('form-bem').reset();
       document.getElementById('bem-id').value = "";
+      document.getElementById('bem-foto-url-hidden').value = "";
+      document.getElementById('bem-foto-preview').style.display = 'none';
+      document.getElementById('file-label').innerHTML = `<i class="ph ph-camera"></i> Clique para adicionar foto`;
       document.getElementById('btn-excluir-bem').classList.add('hidden');
       document.getElementById('btn-salvar-bem').innerHTML = `<i class="ph ph-floppy-disk"></i> Salvar Bem`;
     }
@@ -859,6 +998,19 @@
       document.getElementById('bem-valor-atual').value = bem.valor_atual || "";
       document.getElementById('bem-situacao').value = bem.situacao || "Ativo";
       document.getElementById('bem-obs').value = bem.obs || "";
+      
+      // Foto
+      document.getElementById('bem-foto-url-hidden').value = bem.foto_url || "";
+      const preview = document.getElementById('bem-foto-preview');
+      if (bem.foto_url) {
+        preview.src = bem.foto_url;
+        preview.style.display = 'block';
+        document.getElementById('file-label').textContent = "Foto carregada (clique para alterar)";
+      } else {
+        preview.style.display = 'none';
+        document.getElementById('file-label').innerHTML = `<i class="ph ph-camera"></i> Clique para adicionar foto`;
+      }
+
       document.getElementById('btn-excluir-bem').classList.remove('hidden');
       document.getElementById('btn-salvar-bem').innerHTML = `<i class="ph ph-check"></i> Atualizar Bem`;
       window.scrollTo(0,0);
@@ -879,6 +1031,7 @@
       tbody.innerHTML = bensList.slice(0, 10).map(b => `
         <tr onclick="editarBem(${b.id})">
           <td>#${b.id}</td>
+          <td>${b.foto_url ? '<i class="ph ph-image" style="color:var(--primary)"></i>' : '-'}</td>
           <td><strong>${b.descricao}</strong><br><span style="font-size:12px;color:#777">${b.tag || '-'}</span></td>
           <td>${b.setor || '-'}</td>
           <td>${b.responsavel || '-'}</td>
@@ -978,7 +1131,14 @@
       document.getElementById('modal-historico-container').style.display = 'none';
       document.getElementById('tabela-hist-modal').querySelector('tbody').innerHTML = '';
 
+      // Imagem no Modal
+      let imgHtml = '';
+      if (bem.foto_url) {
+        imgHtml = `<div style="text-align:center; margin-bottom:16px;"><img src="${bem.foto_url}" style="max-width:100%; max-height:300px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.1);"></div>`;
+      }
+
       document.getElementById('modal-body').innerHTML = `
+        ${imgHtml}
         <div style="background:#f9fafb; padding:16px; border-radius:8px;">
           <p><strong>Descrição:</strong> ${bem.descricao}</p>
           <p><strong>Patrimônio/Tag:</strong> ${bem.tag || '-'}</p>
